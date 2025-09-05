@@ -16,7 +16,7 @@ function AdminDashboard() {
   }, []);
 
   const handleApprove = async (id) => {
-    await fetch('https://dholratri-server.onrender.com/api/admin/bookings/${id}/approve`, { method: 'PATCH' });
+    await fetch(`https://dholratri-server.onrender.com/api/admin/bookings/${id}/approve`, { method: 'PATCH' });
     fetchBookings(); // Refresh the list
   };
 
