@@ -31,7 +31,7 @@ function ScannerPage() {
         }
 
         try {
-          const response = await fetch('/api/verify', {
+          const response = await fetch('https://dholratri-server.onrender.com/api/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: decodedText }),
