@@ -13,7 +13,7 @@ function StatusPage() {
     setMessage('Checking...');
     setBooking(null);
     try {
-      const response = await fetch(`/api/bookings/status/${phone}`);
+      const response = await fetch(`https://dholratri-server.onrender.com/api/bookings/status/${phone}`);
       const data = await response.json();
       if (response.ok) {
         setBooking(data);
