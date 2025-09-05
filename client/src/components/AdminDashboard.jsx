@@ -5,7 +5,7 @@ function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
 
   const fetchBookings = async () => {
-    const response = await fetch(`https://dholratri-server.onrender.com/api/admin/bookings');
+    const response = await fetch('https://dholratri-server.onrender.com/api/admin/bookings');
     const data = await response.json();
     setBookings(data);
   };
