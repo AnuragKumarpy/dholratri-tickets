@@ -21,7 +21,7 @@ function BookingForm() {
     formData.append('screenshot', screenshot);
 
     try {
-      const response = await fetch('/api/bookings', {
+      const response = await fetch('https://dholratri-server.onrender.com/api/bookings', {
         method: 'POST',
         body: formData,
       });
