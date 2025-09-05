@@ -1,0 +1,15 @@
+.passContainer {
+  border: 10px solid #facc15;
+  padding: 2rem;
+  margin-top: 2rem;
+  background: white;
+  color: black;
+  text-align: center;
+}
+.passContainer h2 {
+  color: #7f1d1d;
+}
+.passContainer img {
+  margin: 1rem auto;
+  display: block;
+}

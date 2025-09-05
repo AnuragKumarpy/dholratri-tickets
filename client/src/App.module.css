@@ -1,0 +1,13 @@
+.container {
+  background-color: #7f1d1d; /* This is a deep red color */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 3rem; /* 48px */
+  font-weight: 700;
+  color: #facc15; /* This is a golden yellow color */
+}

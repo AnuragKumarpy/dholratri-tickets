@@ -1,0 +1,48 @@
+.pageContainer {
+  background-color: #7f1d1d; /* Deep Red */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+.eventCard {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2.5rem;
+  border-radius: 0.75rem;
+  max-width: 600px;
+  text-align: center;
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #facc15; /* Golden Yellow */
+}
+
+.description {
+  color: #fde68a; /* Lighter Yellow */
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+.bookButton {
+  background-color: #facc15; /* Golden Yellow */
+  color: #7f1d1d; /* Deep Red */
+  font-weight: bold;
+  font-size: 1.25rem;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  margin-top: 2rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.bookButton:hover {
+  transform: scale(1.05);
+}

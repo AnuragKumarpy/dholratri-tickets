@@ -1,0 +1,27 @@
+.dashboard {
+  padding: 2rem;
+  font-family: sans-serif;
+}
+.bookingCard {
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #d1d5db;
+}
+.bookingCard h3 { margin-top: 0; }
+.actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
+.approveBtn, .rejectBtn {
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  color: white;
+  cursor: pointer;
+}
+.approveBtn { background-color: #16a34a; }
+.rejectBtn { background-color: #dc2626; }
+.screenshotLink {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: #2563eb;
+}
