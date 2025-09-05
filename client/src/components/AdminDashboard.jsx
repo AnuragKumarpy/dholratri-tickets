@@ -5,7 +5,7 @@ function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
 
   const fetchBookings = async () => {
-    const response = await fetch('/api/admin/bookings');
+    const response = await fetch('https://dholratri-server.onrender.com/api/admin/bookings');
     const data = await response.json();
     setBookings(data);
   };
@@ -16,12 +16,12 @@ function AdminDashboard() {
   }, []);
 
   const handleApprove = async (id) => {
-    await fetch(`/api/admin/bookings/${id}/approve`, { method: 'PATCH' });
+    await fetch('https://dholratri-server.onrender.com/api/admin/bookings/${id}/approve`, { method: 'PATCH' });
     fetchBookings(); // Refresh the list
   };
 
   const handleReject = async (id) => {
-    await fetch(`/api/admin/bookings/${id}/reject`, { method: 'PATCH' });
+    await fetch('https://dholratri-server.onrender.com/api/admin/bookings/${id}/reject`, { method: 'PATCH' });
     fetchBookings(); // Refresh the list
   };
 
@@ -34,7 +34,7 @@ function AdminDashboard() {
           <h3>{booking.fullName}</h3>
           <p><strong>Phone:</strong> {booking.phone}</p>
           <p><strong>UTR:</strong> {booking.utr}</p>
-          <a href={`http://localhost:5001/${booking.screenshotPath}`} target="_blank" rel="noopener noreferrer" className={styles.screenshotLink}>
+          <a href={`https://dholratri-server.onrender.com/${booking.screenshotPath}`} target="_blank" rel="noopener noreferrer" className={styles.screenshotLink}>
             View Screenshot
           </a>
           <div className={styles.actions}>
