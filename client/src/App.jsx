@@ -8,7 +8,7 @@ import ScannerPage from './components/ScannerPage';
 import LoginPage from './components/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
-import TermsPage from './components/TermsPage'; // 1. IMPORT THE NEW PAGE
+import TermsPage from './components/TermsPage';
 
 function App() {
   return (
@@ -21,8 +21,7 @@ function App() {
           <Route path="/book" element={<BookingForm />} />
           <Route path="/status" element={<StatusPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/terms-and-conditions" element={<TermsPage />} /> {/* 2. ADD THE NEW ROUTE */}
-
+          <Route path="/terms-and-conditions" element={<TermsPage />} />
           {/* Protected Routes */}
           <Route
             path="/admin"
@@ -40,10 +39,11 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Catch-all for 404 */}
+          <Route path="*" element={<div>404: Page Not Found</div>} />
         </Routes>
       </main>
-      
-      <Footer /> 
+      <Footer />
     </>
   );
 }
