@@ -42,13 +42,14 @@ function StatusPage() {
       }
       const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
       const response = await fetch(`${apiUrl}/api/tickets/status/${cleanPhone}`);
+      console.log('API Response:', await response.clone().text()); // Debug log
       const data = await response.json();
 
       if (response.ok) {
         setTickets(data);
         setMessage(data.length === 0 ? 'No booking found for this phone number.' : '');
       } else {
-        setMessage(data.message);
+        setMessage(data.message || 'Server error');
       }
     } catch (error) {
       console.error('Status check failed:', error);
