@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Lottie from 'react-lottie';
-import { AnimatePresence } from 'framer-motion'; 
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import styles from './StatusPage.module.css';
 import formStyles from './BookingForm.module.css';
@@ -10,14 +10,14 @@ import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
   const [phone, setPhone] = useState('');
-  const [tickets, setTickets] = useState([]); 
+  const [tickets, setTickets] = useState([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePrint = () => {
     window.print();
     toast.success('Preparing your tickets...');
-  }
+  };
 
   const lottieOptions = {
     loop: true,
@@ -34,52 +34,51 @@ function StatusPage() {
     setTickets([]);
     setIsLoading(true);
     try {
-      // THIS IS THE FIX: Trim the phone number BEFORE sending it to the API
       const cleanPhone = phone.trim();
-      if (!cleanPhone) return; // Don't search if the field is just spaces
-
-      const response = await fetch(`/api/tickets/status/${cleanPhone}`); // Use the clean phone
+      if (!cleanPhone) {
+        setMessage('Please enter a valid phone number.');
+        setIsLoading(false);
+        return;
+      }
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
+      const response = await fetch(`${apiUrl}/api/tickets/status/${cleanPhone}`);
       const data = await response.json();
-      
+
       if (response.ok) {
-        setTickets(data); 
+        setTickets(data);
         setMessage(data.length === 0 ? 'No booking found for this phone number.' : '');
       } else {
-        setMessage(data.message); // This will now correctly show the 404 message from the server
+        setMessage(data.message);
       }
-    } catch (error) { 
-      console.error('Status check failed:', error); 
+    } catch (error) {
+      console.error('Status check failed:', error);
       setMessage('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const approvedTickets = tickets.filter(t => t.status === 'approved');
-  const pendingTickets = tickets.filter(t => t.status === 'pending-approval' || t.status === 'payment-pending');
-  const rejectedTickets = tickets.filter(t => t.status === 'rejected');
+  const approvedTickets = tickets.filter((t) => t.status === 'approved');
+  const pendingTickets = tickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
+  const rejectedTickets = tickets.filter((t) => t.status === 'rejected');
 
   return (
-    <div className={pageStyles.pageContainer} style={{ minHeight: '120vh' }}>
-      <div className={pageStyles.eventCard} style={{ maxWidth: '900px' }}>
-        
-        <div className="print-hide">
-          <h1 className={pageStyles.title}>Check Your Pass Status</h1>
-          <form onSubmit={handleCheckStatus} className={formStyles.formContainer} style={{ margin: '0 auto' }}>
-            <input
-              type="tel"
-              placeholder="Enter Your Phone Number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)} // User input is not trimmed while typing
-              required
-            />
-            <button className={pageStyles.bookButton} disabled={isLoading}>
-              {isLoading ? 'Checking...' : 'Check Status'}
-            </button>
-          </form>
-          {message && <p className={pageStyles.description}>{message}</p>}
-        </div>
-
+    <div className={pageStyles.pageContainer}>
+      <div className={pageStyles.eventCard}>
+        <h1 className={pageStyles.title}>Check Your Booking Status</h1>
+        <form className={formStyles.formContainer} onSubmit={handleCheckStatus}>
+          <input
+            type="tel"
+            placeholder="Enter Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+          <button className={pageStyles.bookButton} disabled={isLoading}>
+            {isLoading ? 'Checking...' : 'Check Status'}
+          </button>
+        </form>
+        {message && <p className={pageStyles.description}>{message}</p>}
         {pendingTickets.length > 0 && (
           <div className={`${styles.statusBox} print-hide`}>
             <Lottie options={lottieOptions} height={200} width={200} />
@@ -90,14 +89,15 @@ function StatusPage() {
           </div>
         )}
         {rejectedTickets.length > 0 && (
-           <div className={`${styles.statusBox} print-hide`}>
-             <h2 className={styles.statusTitle} style={{color: '#dc2626'}}>Booking Rejected</h2>
-             <p className={pageStyles.description}>
-                Your booking for {rejectedTickets.length} ticket(s) was not approved.
-             </p>
-           </div>
+          <div className={`${styles.statusBox} print-hide`}>
+            <h2 className={styles.statusTitle} style={{ color: '#dc2626' }}>
+              Booking Rejected
+            </h2>
+            <p className={pageStyles.description}>
+              Your booking for {rejectedTickets.length} ticket(s) was not approved.
+            </p>
+          </div>
         )}
-
         {approvedTickets.length > 0 && (
           <>
             <div className={`${styles.passListHeader} print-hide`}>
@@ -106,7 +106,6 @@ function StatusPage() {
                 Print All Tickets
               </button>
             </div>
-
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
                 {approvedTickets.map((ticket, index) => (
@@ -124,7 +123,6 @@ function StatusPage() {
             </div>
           </>
         )}
-
       </div>
     </div>
   );
