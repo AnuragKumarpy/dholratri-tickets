@@ -21,6 +21,7 @@ const env = cleanEnv(process.env, {
   CLOUDINARY_API_KEY: str(),
   CLOUDINARY_API_SECRET: str(),
   JWT_SECRET: str(),
+  ADMIN_PASSWORD: str(), // Added for secure password storage
 });
 
 // --- Cloudinary Config ---
@@ -52,23 +53,23 @@ const qrCodeStorage = new CloudinaryStorage({
 // --- Multer Uploaders ---
 const uploadScreenshot = multer({
   storage: screenshotStorage,
-  limits: { fileSize: 1024 * 1024 }, // 200KB limit
+  limits: { fileSize: 1024 * 1024 }, // 1MB limit
 });
 
 const uploadPaymentQr = multer({
   storage: qrCodeStorage,
-  limits: { fileSize: 1024 * 1024 }, // 200KB limit for QR code
+  limits: { fileSize: 1024 * 1024 }, // 1MB limit
 });
 
 // --- Express App Setup ---
 const app = express();
 app.use(helmet());
-app.use(express.json({ limit: '1024kb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'http://localhost:5173', // For Vite local dev
-    'https://dholratri-tickets.vercel.app', // Vercel frontend
+    'http://localhost:5173',
+    'https://dholratri-tickets.vercel.app',
   ],
   methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
   credentials: true,
@@ -83,7 +84,7 @@ app.get('/', (req, res) => {
 const makeRequestWritable = (req, res, next) => {
   console.log(`[${new Date().toISOString()}] Making request objects writable for ${req.method} ${req.path}`, {
     query: req.query,
-    body: req.body,
+    body: Object.keys(req.body).length ? '[REDACTED]' : {}, // Redact sensitive data
     params: req.params,
   });
   req.query = JSON.parse(JSON.stringify(req.query));
@@ -91,7 +92,7 @@ const makeRequestWritable = (req, res, next) => {
   req.params = JSON.parse(JSON.stringify(req.params));
   console.log(`[${new Date().toISOString()}] After writable:`, {
     query: req.query,
-    body: req.body,
+    body: Object.keys(req.body).length ? '[REDACTED]' : {},
     params: req.params,
   });
   next();
@@ -168,22 +169,22 @@ async function connectToDb() {
   }
 }
 
-async function createAdminUser(username, password) {
+async function createAdminUser() {
   try {
     const adminCollection = db.collection('admins');
-    const existingAdmin = await adminCollection.findOne({ username });
+    const existingAdmin = await adminCollection.findOne({ username: 'admin' });
     if (existingAdmin) {
-      console.log(`Admin user '${username}' already exists. Skipping creation.`);
+      console.log(`Admin user 'admin' already exists. Skipping creation.`);
       return;
     }
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(env.ADMIN_PASSWORD, salt);
     await adminCollection.insertOne({
-      username,
+      username: 'admin',
       password: hashedPassword,
       createdAt: new Date(),
     });
-    console.log(`✅ Admin user '${username}' created successfully!`);
+    console.log(`✅ Admin user 'admin' created successfully!`);
   } catch (err) {
     console.error('Error creating admin user:', err);
   }
@@ -301,7 +302,7 @@ app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeRequestWritable, m
   }
 });
 
-app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot.single('screenshot')), makeRequestWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot), makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { id } = req.params;
     const { utr } = req.body;
@@ -426,7 +427,7 @@ app.post('/api/verify', verifyToken, makeRequestWritable, mongoSanitize(), async
     const { id } = req.body;
     const ticket = await db.collection('tickets').findOne({ _id: new ObjectId(id) });
     if (!ticket) return res.status(404).json({ valid: false, message: 'Ticket Not Found' });
-    if (ticket.status !== 'approved') return res.status(403).json({ valid: false, message: `Ticket status is: ${ticket.status.toUpperCase()}` });
+    if (ticket.status !== 'approved') return res.status(403).json({ valid: false, message: `Ticket status is: ${ticket.status.toUpperCase()` });
     if (ticket.checkedIn) return res.status(409).json({ valid: false, message: 'Ticket Already Checked In', name: ticket.attendeeName });
 
     await db.collection('tickets').updateOne(
@@ -467,7 +468,7 @@ app.get('/api/admin/settings', verifyToken, makeRequestWritable, mongoSanitize()
   }
 });
 
-app.patch('/api/admin/settings', verifyToken, handleMulterError(uploadPaymentQr.single('paymentQrFile')), makeRequestWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/admin/settings', verifyToken, handleMulterError(uploadPaymentQr), makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { error } = settingsSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
@@ -498,7 +499,7 @@ app.patch('/api/admin/settings', verifyToken, handleMulterError(uploadPaymentQr.
 const PORT = process.env.PORT || 5001;
 
 connectToDb().then(() => {
-  createAdminUser('admin', 'DholRatri2025!');
+  createAdminUser();
   const server = app.listen(PORT, () => {
     console.log(`🎉 Server is running with SECURE logic on http://localhost:${PORT}`);
   });
