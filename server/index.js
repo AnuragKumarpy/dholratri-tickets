@@ -66,17 +66,12 @@ const app = express();
 app.use(helmet());
 app.use(express.json({ limit: '10kb' }));
 app.use(cors({
-<<<<<<< HEAD
-  origin: ['http://localhost:3000', 'https://dholratri-tickets.vercel.app/'], // Adjust as needed
-  methods: ['GET', 'POST', 'PATCH'],
-=======
   origin: [
     'http://localhost:3000',
     'http://localhost:5173', // For Vite local dev
     'https://dholratri-tickets.vercel.app', // Vercel frontend
   ],
   methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
->>>>>>> 5dc6893 (Add root route, fix TypeError, update dependencies, remove useUnifiedTopology)
   credentials: true,
 }));
 
