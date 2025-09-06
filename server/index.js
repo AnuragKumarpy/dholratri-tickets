@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
 const qrcode = require('qrcode');
 const jwt = require('jsonwebtoken');
@@ -87,9 +86,9 @@ const makeRequestWritable = (req, res, next) => {
     body: req.body,
     params: req.params,
   });
-  req.query = JSON.parse(JSON.stringify(req.query)); // Deep copy
-  req.body = JSON.parse(JSON.stringify(req.body)); // Deep copy
-  req.params = JSON.parse(JSON.stringify(req.params)); // Deep copy
+  req.query = JSON.parse(JSON.stringify(req.query));
+  req.body = JSON.parse(JSON.stringify(req.body));
+  req.params = JSON.parse(JSON.stringify(req.params));
   console.log(`[${new Date().toISOString()}] After writable:`, {
     query: req.query,
     body: req.body,
@@ -105,7 +104,7 @@ const sanitizeObject = (obj) => {
     if (typeof obj[key] === 'string') {
       sanitized[key] = obj[key].replace(/[$][\w]+/g, '');
     } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-      sanitized[key] = sanitizeObject(obj[key]); // Recursive sanitization
+      sanitized[key] = sanitizeObject(obj[key]);
     } else {
       sanitized[key] = obj[key];
     }
@@ -160,7 +159,6 @@ async function connectToDb() {
     await db.createCollection('settings');
     console.log('🗄️ Successfully connected to MongoDB Atlas!');
 
-    // MongoDB connection event handlers
     client.on('connected', () => console.log('MongoDB reconnected'));
     client.on('disconnected', () => console.warn('MongoDB disconnected, attempting to reconnect...'));
     client.on('error', (err) => console.error('MongoDB connection error:', err));
@@ -505,7 +503,6 @@ connectToDb().then(() => {
     console.log(`🎉 Server is running with SECURE logic on http://localhost:${PORT}`);
   });
 
-  // Graceful shutdown
   process.on('SIGINT', async () => {
     console.log('Shutting down server...');
     server.close();
