@@ -1,0 +1,55 @@
+// Removed all imports for useRef and ReactToPrint
+import styles from './TicketPass.module.css';
+import eventConfig from '../eventConfig.json';
+
+// This is now just a display component. It doesn't know how to print itself.
+function TicketPass({ ticket }) {
+  const tierDetails = eventConfig.tiers.find(t => t.id === ticket.ticketType);
+  const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
+
+  // Removed the ref from the div
+  return (
+    <div className={styles.ticketPass}>
+      <div className={styles.mainInfo}>
+        <div className={styles.header}>
+          <span>{eventConfig.location} Event</span>
+          <h2>{eventConfig.eventName}</h2>
+        </div>
+        
+        <div className={styles.attendeeInfo}>
+          <h3>{ticket.attendeeName}</h3>
+          <p>Pass Holder</p>
+        </div>
+
+        <div className={styles.details}>
+          <div>
+            <strong>Ticket Type</strong>
+            <span style={{ textTransform: 'capitalize' }}>{tierName}</span>
+          </div>
+          <div>
+            <strong>Phone</strong>
+            <span>{ticket.phone}</span>
+          </div>
+          <div>
+            <strong>Status</strong>
+            <span style={{ color: '#16a34a', textTransform: 'uppercase' }}>{ticket.status}</span>
+          </div>
+          <div>
+            <strong>Pass ID</strong>
+            <span style={{ fontSize: '0.9rem', fontFamily: 'monospace' }}>{ticket._id}</span>
+          </div>
+        </div>
+        
+        {/* Removed the print button container and ReactToPrint component */}
+
+      </div>
+
+      <div className={styles.qrStub}>
+        <img src={ticket.qrCodeDataUrl} alt="Your Ticket QR Code" />
+        <p>Present this entire screen at the entry gate. This QR code is valid for one (1) entry per ticket.</p>
+      </div>
+    </div>
+  );
+}
+
+export default TicketPass;

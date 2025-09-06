@@ -1,15 +1,49 @@
-.passContainer {
-  border: 10px solid #facc15;
-  padding: 2rem;
-  margin-top: 2rem;
-  background: white;
-  color: black;
+/* Styles for the "Pending" or "Rejected" status cards */
+.statusBox {
+  padding: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+  background: #ffffff; /* Use the white card background */
+  border: 1px solid var(--color-light-grey);
+  border-radius: 1rem; /* Match event card border radius */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Match event card shadow */
   text-align: center;
 }
-.passContainer h2 {
-  color: #7f1d1d;
+
+.statusTitle {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary-dark); /* Use primary brand color */
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
 }
-.passContainer img {
-  margin: 1rem auto;
-  display: block;
+
+.passListContainer {
+  margin-top: var(--spacing-xl);
+  width: 100%;
+}
+/* ADD THIS TO THE END of StatusPage.module.css */
+
+.passListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-xl);
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.printButton {
+  background-color: transparent;
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-primary-dark);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.printButton:hover {
+  background-color: var(--color-primary-dark);
+  color: var(--color-text-light);
+  transform: translateY(-2px);
 }

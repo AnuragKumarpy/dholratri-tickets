@@ -1,0 +1,25 @@
+{
+  "eventName": "DholRatri Dandiya Nights",
+  "location": "Dehradun",
+  "paymentUpiId": "your-upi-id@okhdfcbank",
+  "tiers": [
+    {
+      "id": "general",
+      "name": "General Pass",
+      "price": 499,
+      "perks": ["Standard Entry", "Access to Garba Arena"]
+    },
+    {
+      "id": "premium",
+      "name": "Premium Pass",
+      "price": 999,
+      "perks": ["Separate Premium Entry", "Zone A Access", "1 Complimentary Drink"]
+    },
+    {
+      "id": "luxury",
+      "name": "Luxury Lounge",
+      "price": 2499,
+      "perks": ["Lounge Access", "Dedicated Seating", "Unlimited Food & Drinks"]
+    }
+  ]
+}

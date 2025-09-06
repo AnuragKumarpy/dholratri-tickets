@@ -1,5 +1,102 @@
-body {
+/* --- Google Fonts Import --- */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap');
+
+/* --- Global CSS Variables (Your New Theme Colors) --- */
+:root {
+  --color-primary-dark: #6B2A22; /* Deep Reddish-Brown from logo */
+  --color-secondary-accent: #E76F51; /* Vibrant Orange-Red from logo */
+  --color-background-light: #F8F3EC; /* Creamy Beige from logo background */
+  --color-golden-yellow: #FACC15; /* Existing accent, complements theme */
+  --color-golden-yellow-dark: #E4A600; /* A darker shade for hover/active */
+  --color-text-dark: #333333; /* For general dark text */
+  --color-text-light: #FFFFFF; /* For text on dark backgrounds */
+  --color-light-grey: #DDDDDD; /* For subtle borders/dividers */
+  --color-error: #EF4444; /* Standard error red */
+  --color-success: #22C55E; /* Standard success green */
+
+  /* --- Font Stacks --- */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Open Sans', sans-serif;
+
+  /* --- Spacing --- */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+}
+
+/* --- Base Styles --- */
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  line-height: 1.6;
+  color: var(--color-text-dark);
+  background-color: var(--color-background-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Global Typography --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--color-primary-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+h1 { font-size: 2.5rem; line-height: 1.2; }
+h2 { font-size: 2rem; line-height: 1.3; }
+h3 { font-size: 1.75rem; line-height: 1.4; }
+h4 { font-size: 1.5rem; line-height: 1.4; }
+p { margin-bottom: var(--spacing-md); }
+
+a {
+  color: var(--color-secondary-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.75rem var(--spacing-lg);
+  transition: all 0.2s ease-in-out;
+  color: var(--color-text-light); /* Default button text color */
+}
+
+/* --- Utility Classes (Optional, but good for quick styling) --- */
+.text-center { text-align: center; }
+.mt-xl { margin-top: var(--spacing-xl); }
+.mb-xl { margin-bottom: var(--spacing-xl); }
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
+  h4 { font-size: 1.25rem; }
+  body { font-size: 0.95rem; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
+  body { font-size: 0.9rem; }
 }

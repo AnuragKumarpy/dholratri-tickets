@@ -25,3 +25,45 @@
   margin-top: 0.5rem;
   color: #2563eb;
 }
+/* ADD THIS TO THE END of AdminDashboard.module.css */
+
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap; /* For mobile */
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.logoutBtn, .refreshBtn {
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.logoutBtn {
+  background-color: var(--color-error, #dc2626); /* Use error color */
+}
+.logoutBtn:hover {
+  opacity: 0.8;
+}
+
+.refreshBtn {
+  background-color: var(--color-primary-dark, #6B2A22); /* Use theme color */
+}
+.refreshBtn:hover {
+  background-color: #000;
+}
+.refreshBtn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

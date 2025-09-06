@@ -1,0 +1,29 @@
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  width: 100%;
+  max-width: 400px;
+}
+
+.loginContainer input {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-light-grey);
+  color: var(--color-text-dark);
+  padding: 0.9rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.loginContainer input::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+.loginContainer input:focus {
+  outline: none;
+  border-color: var(--color-secondary-accent);
+  box-shadow: 0 0 0 2px rgba(231, 111, 81, 0.2);
+}

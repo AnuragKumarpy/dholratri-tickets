@@ -1,0 +1,6 @@
+@media print {
+  /* This file's ONLY job is to hide anything we tag with this class. */
+  .print-hide {
+    display: none !important;
+  }
+}

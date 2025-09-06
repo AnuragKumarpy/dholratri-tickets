@@ -1,48 +1,217 @@
 .pageContainer {
-  background-color: #7f1d1d; /* Deep Red */
+  background: url('../assets/image.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  width: 100vw;
   min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 2rem;
-  font-family: sans-serif;
+  box-sizing: border-box;
+  overflow: auto;
 }
 
 .eventCard {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 2.5rem;
-  border-radius: 0.75rem;
-  max-width: 600px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 3rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
   text-align: center;
-  border: 1px solid rgba(250, 204, 21, 0.3);
+  max-width: 700px;
+  width: 100%;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px) brightness(1.1);
+  -webkit-backdrop-filter: blur(10px) brightness(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: fadeIn 1s ease-out forwards; /* Keep the card fade-in */
+  overflow: hidden;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logo {
+  max-width: 180px;
+  margin-bottom: var(--spacing-xl);
+  animation: bounceIn 1s ease-out forwards;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 1; }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+
+/* --- 1. TITLE STYLES (Old animation removed) --- */
 .title {
   font-size: 3rem;
+  color: var(--color-primary-dark);
+  margin-bottom: 1.5rem; /* Increased margin for new description animation */
+  font-family: var(--font-heading);
+}
+
+/* --- 2. NEW: ILLUMINATING TITLE ANIMATION --- */
+.illuminatedTitle {
   font-weight: 700;
-  color: #facc15; /* Golden Yellow */
+  /* Create a gradient of light passing over the text */
+  background-image: linear-gradient(
+    90deg,
+    var(--color-primary-dark),
+    var(--color-primary-dark),
+    #FFFFFF, /* This is the white "light beam" */
+    var(--color-primary-dark),
+    var(--color-primary-dark)
+  );
+  background-size: 200% auto; /* Gradient is 2x the width of the text */
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: illuminate 4s linear infinite; /* Apply the animation */
 }
 
+@keyframes illuminate {
+  0% {
+    background-position: 200% 0; /* Start with gradient all the way to the right */
+  }
+  100% {
+    background-position: -200% 0; /* End with gradient all the way to the left */
+  }
+}
+
+/* --- 3. NEW: TYPEWRITER ANIMATION (for first paragraph) --- */
+.typewriter {
+  /* This is the magic for the typing effect */
+  font-family: 'Courier New', Courier, monospace; /* Classic typewriter font */
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-text-dark);
+  margin: 0 auto 1rem;
+  max-width: 600px;
+  width: 135ch; /* THIS IS KEY: The number of characters in the line */
+  animation: typing 4s steps(135), /* Animate typing for 135 steps */
+             blink 0.75s step-end infinite; /* Animate the blinking cursor */
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 3px solid var(--color-secondary-accent); /* The cursor */
+}
+
+/* Keystrokes for the typing animation */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 135ch; /* End at 135 characters */
+  }
+}
+
+/* Cursor blinking animation */
+@keyframes blink {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: var(--color-secondary-accent);
+  }
+}
+
+/* --- 4. ORIGINAL DESCRIPTION (for second paragraph, delayed fade-in) --- */
 .description {
-  color: #fde68a; /* Lighter Yellow */
-  margin-top: 1rem;
-  font-size: 1.125rem;
-  line-height: 1.75;
+  font-size: 1.15rem;
+  color: var(--color-text-dark);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  
+  /* This animation now starts AFTER the typing is finished */
+  animation: fadeInText 1s ease-out 4.5s forwards; /* Delay 4.5s */
+  opacity: 0; /* Start invisible */
 }
 
-.bookButton {
-  background-color: #facc15; /* Golden Yellow */
-  color: #7f1d1d; /* Deep Red */
-  font-weight: bold;
-  font-size: 1.25rem;
-  padding: 0.75rem 2rem;
-  border-radius: 0.5rem;
-  margin-top: 2rem;
-  cursor: pointer;
+@keyframes fadeInText {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* --- Button Styles (Unchanged) --- */
+.bookButton, .statusButton {
+  /* ...all your existing button styles are correct... */
+  font-family: var(--font-heading);
+  background-color: var(--color-primary-dark);
+  color: var(--color-text-light);
   border: none;
-  transition: all 0.2s ease-in-out;
+  padding: 1rem 2.5rem;
+  border-radius: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin: 0.5rem; /* Added to keep buttons from touching */
 }
 
-.bookButton:hover {
-  transform: scale(1.05);
+.bookButton:hover, .statusButton:hover {
+  background-color: var(--color-secondary-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+.bookButton:active, .statusButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.bookButton:disabled, .statusButton:disabled {
+  background-color: var(--color-light-grey);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --- Responsive (Unchanged) --- */
+@media (max-width: 768px) {
+  .eventCard { padding: 2rem; margin-top: 2rem; }
+  .title { font-size: 2.5rem; }
+  .description, .typewriter { font-size: 1rem; }
+  .bookButton, .statusButton { padding: 0.8rem 2rem; font-size: 1.1rem; }
+  
+  /* Stop typing animation on mobile and just fade in */
+  .typewriter {
+     width: auto;
+     white-space: normal;
+     border-right: none;
+     animation: fadeInText 1s ease-out 0.5s forwards;
+     opacity: 0;
+  }
+  .description {
+      animation-delay: 1s; /* Just delay the second paragraph slightly */
+  }
+}
+
+@media (max-width: 480px) {
+  .pageContainer { padding: 1rem; align-items: flex-start; }
+  .eventCard { padding: 1.5rem; border-radius: 1rem; margin-top: 1rem; }
+  .title { font-size: 2rem; }
+  .description, .typewriter { font-size: 0.9rem; }
+  .bookButton, .statusButton { width: 100%; font-size: 1rem; margin: 0.25rem 0; }
+}
+
+/* Print Styles (Unchanged) */
+@media print {
+  .pageContainer,
+  .eventCard {
+    min-height: unset;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }

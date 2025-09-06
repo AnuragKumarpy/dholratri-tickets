@@ -1,25 +1,249 @@
+/* --- Base Form and Input Styles --- */
 .formContainer {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg); /* Increased gap for a cleaner look */
   width: 100%;
-  max-width: 500px;
 }
 
-.formContainer input {
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(250, 204, 21, 0.3);
-  color: #fde68a;
-  padding: 0.75rem 1rem;
+.formContainer input[type="text"],
+.formContainer input[type="tel"],
+.formContainer input[type="file"] {
+  background-color: #FFFFFF; /* Clean white input */
+  border: 1px solid var(--color-light-grey);
+  color: var(--color-text-dark);
+  padding: 0.9rem 1rem;
   border-radius: 0.5rem;
   font-size: 1rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .formContainer input::placeholder {
-  color: #fde68a;
-  opacity: 0.6;
+  color: #999;
+  opacity: 1;
 }
 
-.formContainer .bookButton {
-  margin-top: 1rem; /* Re-use button style from EventPage */
+.formContainer input:focus {
+  outline: none;
+  border-color: var(--color-secondary-accent); /* Accent color on focus */
+  box-shadow: 0 0 0 2px rgba(231, 111, 81, 0.2); /* Soft glow in accent color */
+}
+
+/* Specific style for file input */
+.formContainer input[type="file"] {
+  padding: 0.75rem 1rem;
+  color: #555;
+  cursor: pointer;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-light-grey);
+  margin: var(--spacing-sm) 0;
+}
+
+/* --- Tier Selection --- */
+.tierContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  text-align: left;
+  color: var(--color-text-dark); /* Dark text on light card */
+}
+
+.tierOption {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-light-grey);
+  border-radius: 0.5rem;
+  background-color: #FFFFFF;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.tierOption:hover {
+  border-color: #aaa;
+}
+
+.tierOption input[type="radio"] {
+  margin-top: 6px;
+  flex-shrink: 0;
+  /* Modern custom radio button */
+  appearance: none;
+  width: 1.25em;
+  height: 1.25em;
+  border: 2px solid var(--color-primary-dark);
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+}
+
+.tierOption input[type="radio"]::before {
+  content: "";
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--color-primary-dark);
+}
+
+.tierOption input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+.tierOption small {
+  display: block;
+  color: #555; /* Softer text color for perks */
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+}
+
+
+/* --- Attendee Inputs --- */
+.attendeeInput {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+.attendeeInput input {
+  flex-grow: 1;
+}
+
+.removeBtn, .addBtn {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.removeBtn {
+  background-color: transparent;
+  color: var(--color-secondary-accent);
+  border: 1px solid var(--color-light-grey);
+}
+.removeBtn:hover {
+  background-color: var(--color-secondary-accent);
+  color: white;
+  border-color: var(--color-secondary-accent);
+}
+
+.addBtn {
+  background-color: var(--color-primary-dark); /* Using primary dark for "add" */
+  color: white;
+  padding: 0.75rem;
+}
+.addBtn:hover {
+  background-color: #000; /* Simple hover for dark button */
+}
+
+/* --- Checkboxes --- */
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  text-align: left;
+  color: var(--color-text-dark);
+  font-size: 0.9rem;
+}
+.checkboxLabel input {
+  width: 1.1em;
+  height: 1.1em;
+}
+.checkboxLabel strong {
+  color: var(--color-primary-dark);
+}
+
+/* --- Payment Page (Step 2) --- */
+.paymentInstructions {
+  color: var(--color-text-dark);
+  line-height: 1.7;
+  background: var(--color-background-light); /* Creamy background inside card */
+  padding: var(--spacing-lg);
+  border-radius: 0.5rem;
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+.paymentInstructions strong {
+  color: var(--color-primary-dark);
+  font-size: 1.25rem;
+}
+.paymentQr {
+  display: block;
+  max-width: 200px; /* Slightly smaller QR */
+  width: 100%;
+  height: auto;
+  margin: var(--spacing-md) auto;
+  border-radius: 0.5rem;
+}
+/* ADD THIS TO THE END of BookingForm.module.css */
+
+.successContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.successText {
+  color: var(--color-text-dark);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 500px;
+  margin-bottom: 1rem;
+}
+
+.successActions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Style the "Book Another" button as a secondary/ghost button */
+.bookAnotherButton {
+  background-color: transparent;
+  color: var(--color-primary-dark);
+  border: 2px solid var(--color-primary-dark);
+  font-family: var(--font-heading);
+  padding: 1rem 2.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: none;
+  border-radius: 0.75rem;
+}
+
+.bookAnotherButton:hover {
+  background-color: var(--color-primary-dark);
+  color: var(--color-text-light);
+  transform: translateY(-2px);
+}
+
+/* Ensure link (that we styled as a button) has correct text decoration */
+.successActions a {
+  text-decoration: none;
+}
+/* ADD THIS TO THE END of BookingForm.module.css */
+
+.couponMessage {
+  text-align: center;
+  font-weight: 600;
+  margin-top: -0.5rem; /* Pull it closer to the input */
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.couponSuccess {
+  color: var(--color-success, #16a34a); /* Green color */
+}
+
+.couponError {
+  color: var(--color-error, #dc2626); /* Red color */
 }
