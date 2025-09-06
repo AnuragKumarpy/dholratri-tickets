@@ -53,12 +53,12 @@ const qrCodeStorage = new CloudinaryStorage({
 // --- Multer Uploaders ---
 const uploadScreenshot = multer({
   storage: screenshotStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 200KB limit
+  limits: { fileSize: 200 * 1024 }, // 200KB limit
 });
 
 const uploadPaymentQr = multer({
   storage: qrCodeStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 200KB limit for QR code
+  limits: { fileSize: 200 * 1024 }, // 200KB limit for QR code
 });
 
 // --- Express App Setup ---
@@ -66,14 +66,63 @@ const app = express();
 app.use(helmet());
 app.use(express.json({ limit: '10kb' }));
 app.use(cors({
+<<<<<<< HEAD
   origin: ['http://localhost:3000', 'https://dholratri-tickets.vercel.app/'], // Adjust as needed
   methods: ['GET', 'POST', 'PATCH'],
+=======
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173', // For Vite local dev
+    'https://dholratri-tickets.vercel.app', // Vercel frontend
+  ],
+  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+>>>>>>> 5dc6893 (Add root route, fix TypeError, update dependencies, remove useUnifiedTopology)
   credentials: true,
 }));
 
-// --- Fix for express-mongo-sanitize TypeError ---
-const makeQueryWritable = (req, res, next) => {
-  req.query = { ...req.query }; // Create a writable copy of req.query
+// --- Root Route ---
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to Dholratri Tickets API. Use /api endpoints for functionality.' });
+});
+
+// --- Enhanced Fix for express-mongo-sanitize TypeError ---
+const makeRequestWritable = (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Making request objects writable for ${req.method} ${req.path}`, {
+    query: req.query,
+    body: req.body,
+    params: req.params,
+  });
+  req.query = JSON.parse(JSON.stringify(req.query)); // Deep copy
+  req.body = JSON.parse(JSON.stringify(req.body)); // Deep copy
+  req.params = JSON.parse(JSON.stringify(req.params)); // Deep copy
+  console.log(`[${new Date().toISOString()}] After writable:`, {
+    query: req.query,
+    body: req.body,
+    params: req.params,
+  });
+  next();
+};
+
+// --- Fallback Custom Sanitization ---
+const sanitizeObject = (obj) => {
+  const sanitized = {};
+  for (const key in obj) {
+    if (typeof obj[key] === 'string') {
+      sanitized[key] = obj[key].replace(/[$][\w]+/g, '');
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      sanitized[key] = sanitizeObject(obj[key]); // Recursive sanitization
+    } else {
+      sanitized[key] = obj[key];
+    }
+  }
+  return sanitized;
+};
+
+const customSanitize = (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Custom sanitizing for ${req.method} ${req.path}`);
+  req.query = sanitizeObject(req.query);
+  req.body = sanitizeObject(req.body);
+  req.params = sanitizeObject(req.params);
   next();
 };
 
@@ -102,7 +151,7 @@ const handleMulterError = (uploadMiddleware) => (req, res, next) => {
 };
 
 // --- DB Connect & Admin Create ---
-const client = new MongoClient(env.MONGO_URI, { useUnifiedTopology: true });
+const client = new MongoClient(env.MONGO_URI);
 let db;
 
 async function connectToDb() {
@@ -113,7 +162,7 @@ async function connectToDb() {
     await db.createCollection('tickets');
     await db.createCollection('admins');
     await db.createCollection('activity_logs');
-    await db.createCollection('settings'); // Ensure settings collection exists
+    await db.createCollection('settings');
     console.log('🗄️ Successfully connected to MongoDB Atlas!');
 
     // MongoDB connection event handlers
@@ -206,7 +255,7 @@ const verifyToken = (req, res, next) => {
 };
 
 // --- API Routes ---
-app.post('/api/auth/login', sensitiveRouteLimiter, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.post('/api/auth/login', sensitiveRouteLimiter, makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { username, password } = req.body;
     const admin = await db.collection('admins').findOne({ username });
@@ -216,23 +265,18 @@ app.post('/api/auth/login', sensitiveRouteLimiter, makeQueryWritable, mongoSanit
     const token = jwt.sign({ userId: admin._id, username: admin.username }, env.JWT_SECRET, { expiresIn: '8h' });
     res.json({ token });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error(`[${new Date().toISOString()}] Login error:`, error);
     res.status(500).json({ message: 'Server error during login.' });
   }
 });
 
-app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
-    // THIS IS THE FIX: Added { allowUnknown: true } to the validation options
     const { error } = purchaseSchema.validate(req.body, { allowUnknown: true });
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    // We only deconstruct the keys we know. The others (like wantsMarketingUpdates)
-    // are still in req.body, and we can save them if we want, but Joi won't error.
     const { phone, attendees, ticketType } = req.body;
     const cleanPhone = phone.trim();
-    
-    // We can grab the other fields from req.body now
     const newPurchase = {
       phone: cleanPhone,
       ticketType,
@@ -241,7 +285,6 @@ app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeQueryWritable, mon
       createdAt: new Date(),
       utr: null,
       screenshotPath: null,
-      // Save our extra data
       wantsMarketingUpdates: req.body.wantsMarketingUpdates || false,
       appliedCoupon: req.body.appliedCoupon || 'none',
       finalAmountPaid: req.body.finalAmountPaid || 0,
@@ -249,18 +292,23 @@ app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeQueryWritable, mon
     const purchaseResult = await db.collection('purchases').insertOne(newPurchase);
     const purchaseId = purchaseResult.insertedId;
     const ticketDocs = attendees.map((name) => ({
-      purchaseId, attendeeName: name, ticketType, phone: cleanPhone,
-      status: 'payment-pending', checkedIn: false, qrCodeDataUrl: null,
+      purchaseId,
+      attendeeName: name,
+      ticketType,
+      phone: cleanPhone,
+      status: 'payment-pending',
+      checkedIn: false,
+      qrCodeDataUrl: null,
     }));
     await db.collection('tickets').insertMany(ticketDocs);
     res.status(201).json({ message: 'Purchase initiated. Please proceed to payment.', purchaseId });
   } catch (error) {
-    console.error('Error initiating purchase:', error);
+    console.error(`[${new Date().toISOString()}] Error initiating purchase:`, error);
     res.status(500).json({ message: 'Error initiating purchase.' });
   }
 });
 
-app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot.single('screenshot')), makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot.single('screenshot')), makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { id } = req.params;
     const { utr } = req.body;
@@ -280,12 +328,12 @@ app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot.single
     );
     res.status(200).json({ message: 'Booking received and is now under review.' });
   } catch (error) {
-    console.error('Error confirming payment:', error);
+    console.error(`[${new Date().toISOString()}] Error confirming payment:`, error);
     res.status(500).json({ message: 'Error processing your booking.' });
   }
 });
 
-app.get('/api/admin/purchases', verifyToken, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.get('/api/admin/purchases', verifyToken, makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const purchases = await db.collection('purchases').find({ status: 'pending-approval' }).toArray();
     for (let purchase of purchases) {
@@ -294,12 +342,12 @@ app.get('/api/admin/purchases', verifyToken, makeQueryWritable, mongoSanitize(),
     }
     res.json(purchases);
   } catch (error) {
-    console.error('Error fetching purchases:', error);
+    console.error(`[${new Date().toISOString()}] Error fetching purchases:`, error);
     res.status(500).json({ message: 'Failed to fetch pending purchases' });
   }
 });
 
-app.patch('/api/admin/purchases/:id/approve', verifyToken, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/admin/purchases/:id/approve', verifyToken, makeRequestWritable, mongoSanitize(), async (req, res) => {
   const session = client.startSession();
   try {
     const { id } = req.params;
@@ -328,14 +376,14 @@ app.patch('/api/admin/purchases/:id/approve', verifyToken, makeQueryWritable, mo
     });
     res.json({ message: `Purchase approved. ${approvedTickets.length} tickets generated for: ${approvedTickets.join(', ')}` });
   } catch (error) {
-    console.error('Approval error:', error);
+    console.error(`[${new Date().toISOString()}] Approval error:`, error);
     res.status(500).json({ message: 'Failed to approve purchase: ' + error.message });
   } finally {
     await session.endSession();
   }
 });
 
-app.patch('/api/admin/purchases/:id/reject', verifyToken, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/admin/purchases/:id/reject', verifyToken, makeRequestWritable, mongoSanitize(), async (req, res) => {
   const session = client.startSession();
   try {
     const { id } = req.params;
@@ -347,14 +395,14 @@ app.patch('/api/admin/purchases/:id/reject', verifyToken, makeQueryWritable, mon
     });
     res.json({ message: 'Booking rejected' });
   } catch (error) {
-    console.error('Rejection error:', error);
+    console.error(`[${new Date().toISOString()}] Rejection error:`, error);
     res.status(500).json({ message: 'Failed to reject booking' });
   } finally {
     await session.endSession();
   }
 });
 
-app.get('/api/tickets/status/:phone', makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.get('/api/tickets/status/:phone', makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { phone } = req.params;
     const cleanPhone = phone.trim();
@@ -372,12 +420,12 @@ app.get('/api/tickets/status/:phone', makeQueryWritable, mongoSanitize(), async 
     }
     res.json(tickets);
   } catch (error) {
-    console.error('Error fetching ticket status:', error);
+    console.error(`[${new Date().toISOString()}] Error fetching ticket status:`, error);
     res.status(500).json({ message: 'Error fetching booking status.' });
   }
 });
 
-app.post('/api/verify', verifyToken, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.post('/api/verify', verifyToken, makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { error } = verifySchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
@@ -395,7 +443,7 @@ app.post('/api/verify', verifyToken, makeQueryWritable, mongoSanitize(), async (
     await logActivity(req.user.userId, 'verify_ticket', { ticketId: id, attendeeName: ticket.attendeeName });
     res.status(200).json({ valid: true, message: 'Check-in Successful', name: ticket.attendeeName });
   } catch (error) {
-    console.error('Verification error:', error);
+    console.error(`[${new Date().toISOString()}] Verification error:`, error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
@@ -403,7 +451,7 @@ app.post('/api/verify', verifyToken, makeQueryWritable, mongoSanitize(), async (
 // --- Event Settings Routes ---
 const settingsId = 'global_config';
 
-app.get('/api/settings', makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.get('/api/settings', makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const settings = await db.collection('settings').findOne({ _id: settingsId });
     if (!settings) {
@@ -411,22 +459,22 @@ app.get('/api/settings', makeQueryWritable, mongoSanitize(), async (req, res) =>
     }
     res.json(settings);
   } catch (error) {
-    console.error('Error fetching settings:', error);
+    console.error(`[${new Date().toISOString()}] Error fetching settings:`, error);
     res.status(500).json({ message: 'Server error fetching settings.' });
   }
 });
 
-app.get('/api/admin/settings', verifyToken, makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.get('/api/admin/settings', verifyToken, makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const settings = await db.collection('settings').findOne({ _id: settingsId });
     res.json(settings);
   } catch (error) {
-    console.error('Error fetching admin settings:', error);
+    console.error(`[${new Date().toISOString()}] Error fetching admin settings:`, error);
     res.status(500).json({ message: 'Server error fetching settings.' });
   }
 });
 
-app.patch('/api/admin/settings', verifyToken, handleMulterError(uploadPaymentQr.single('paymentQrFile')), makeQueryWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/admin/settings', verifyToken, handleMulterError(uploadPaymentQr.single('paymentQrFile')), makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { error } = settingsSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
@@ -448,13 +496,13 @@ app.patch('/api/admin/settings', verifyToken, handleMulterError(uploadPaymentQr.
     await logActivity(req.user.userId, 'update_settings', { eventName, paymentUpiId });
     res.json({ message: 'Settings saved successfully!' });
   } catch (error) {
-    console.error('Error saving settings:', error);
+    console.error(`[${new Date().toISOString()}] Error saving settings:`, error);
     res.status(500).json({ message: 'Error saving settings.' });
   }
 });
 
 // --- Server Start & Graceful Shutdown ---
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 
 connectToDb().then(() => {
   createAdminUser('admin', 'DholRatri2025!');
