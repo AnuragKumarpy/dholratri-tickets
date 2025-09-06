@@ -18,9 +18,7 @@ function AdminDashboard() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        return handleAuthError('No token found');
-      }
+      if (!token) return handleAuthError('No token found');
       const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
       const response = await fetch(`${apiUrl}/api/admin/purchases`, {
         headers: { 'Authorization': `Bearer ${token}` },
@@ -40,7 +38,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     getPendingPurchases();
-  }, []);
+  }, [getPendingPurchases]); // Proper dependency
 
   const handleApprove = async (id) => {
     try {
@@ -92,9 +90,7 @@ function AdminDashboard() {
           </button>
         </div>
       </div>
-      
       <EventSettings />
-
       <div className={styles.pendingApprovals}>
         <h2>Pending Approvals ({purchases.length})</h2>
         {purchases.map((purchase) => (
