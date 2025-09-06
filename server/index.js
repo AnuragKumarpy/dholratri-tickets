@@ -427,7 +427,7 @@ app.post('/api/verify', verifyToken, makeRequestWritable, mongoSanitize(), async
     const { id } = req.body;
     const ticket = await db.collection('tickets').findOne({ _id: new ObjectId(id) });
     if (!ticket) return res.status(404).json({ valid: false, message: 'Ticket Not Found' });
-    if (ticket.status !== 'approved') return res.status(403).json({ valid: false, message: `Ticket status is: ${ticket.status.toUpperCase()` });
+    if (ticket.status !== 'approved') return res.status(403).json({ valid: false, message: `Ticket status is: ${ticket.status.toUpperCase()}` });
     if (ticket.checkedIn) return res.status(409).json({ valid: false, message: 'Ticket Already Checked In', name: ticket.attendeeName });
 
     await db.collection('tickets').updateOne(
