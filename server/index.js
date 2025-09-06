@@ -66,7 +66,7 @@ const app = express();
 app.use(helmet());
 app.use(express.json({ limit: '10kb' }));
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://your-frontend-domain.com'], // Adjust as needed
+  origin: ['http://localhost:3000', 'https://dholratri-tickets.vercel.app/'], // Adjust as needed
   methods: ['GET', 'POST', 'PATCH'],
   credentials: true,
 }));
