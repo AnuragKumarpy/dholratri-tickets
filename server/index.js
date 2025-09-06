@@ -21,7 +21,7 @@ const env = cleanEnv(process.env, {
   CLOUDINARY_API_KEY: str(),
   CLOUDINARY_API_SECRET: str(),
   JWT_SECRET: str(),
-  ADMIN_PASSWORD: str(), // Added for secure password storage
+  ADMIN_PASSWORD: str(),
 });
 
 // --- Cloudinary Config ---
@@ -53,12 +53,12 @@ const qrCodeStorage = new CloudinaryStorage({
 // --- Multer Uploaders ---
 const uploadScreenshot = multer({
   storage: screenshotStorage,
-  limits: { fileSize: 1024 * 1024 }, // 1MB limit
+  limits: { fileSize: 1024 * 1024 },
 });
 
 const uploadPaymentQr = multer({
   storage: qrCodeStorage,
-  limits: { fileSize: 1024 * 1024 }, // 1MB limit
+  limits: { fileSize: 1024 * 1024 },
 });
 
 // --- Express App Setup ---
@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 const makeRequestWritable = (req, res, next) => {
   console.log(`[${new Date().toISOString()}] Making request objects writable for ${req.method} ${req.path}`, {
     query: req.query,
-    body: Object.keys(req.body).length ? '[REDACTED]' : {}, // Redact sensitive data
+    body: Object.keys(req.body).length ? '[REDACTED]' : {},
     params: req.params,
   });
   req.query = JSON.parse(JSON.stringify(req.query));
@@ -311,16 +311,16 @@ app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot), make
     }
     const result = await db.collection('purchases').updateOne(
       { _id: new ObjectId(id), status: 'payment-pending' },
-      { $set: { utr, screenshotPath: req.file.path, status: 'pending-approval' } }
+      { $set: { utr, screenshotPath: req.file.path, status: 'booked' } } // Changed to 'booked'
     );
     if (result.matchedCount === 0) {
       return res.status(404).json({ message: 'Pending purchase not found or already processed.' });
     }
     await db.collection('tickets').updateMany(
       { purchaseId: new ObjectId(id) },
-      { $set: { status: 'pending-approval' } }
+      { $set: { status: 'booked' } } // Changed to 'booked'
     );
-    res.status(200).json({ message: 'Booking received and is now under review.' });
+    res.status(200).json({ message: 'Booking received and marked as booked.' });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error confirming payment:`, error);
     res.status(500).json({ message: 'Error processing your booking.' });
@@ -329,7 +329,7 @@ app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot), make
 
 app.get('/api/admin/purchases', verifyToken, makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
-    const purchases = await db.collection('purchases').find({ status: 'pending-approval' }).toArray();
+    const purchases = await db.collection('purchases').find({ status: 'booked' }).toArray(); // Updated to 'booked'
     for (let purchase of purchases) {
       const tickets = await db.collection('tickets').find({ purchaseId: purchase._id }).project({ attendeeName: 1 }).toArray();
       purchase.attendees = tickets.map((t) => t.attendeeName);
@@ -349,11 +349,11 @@ app.patch('/api/admin/purchases/:id/approve', verifyToken, makeRequestWritable, 
     let approvedTickets = [];
     await session.withTransaction(async () => {
       const purchaseUpdate = await db.collection('purchases').updateOne(
-        { _id: purchaseId },
+        { _id: purchaseId, status: 'booked' }, // Updated to 'booked'
         { $set: { status: 'approved' } },
         { session }
       );
-      if (purchaseUpdate.matchedCount === 0) throw new Error('Purchase not found');
+      if (purchaseUpdate.matchedCount === 0) throw new Error('Booked purchase not found');
       const ticketsToApprove = await db.collection('tickets').find({ purchaseId }, { session }).toArray();
       if (ticketsToApprove.length === 0) throw new Error('No tickets found for this purchase.');
       for (const ticket of ticketsToApprove) {
@@ -383,7 +383,7 @@ app.patch('/api/admin/purchases/:id/reject', verifyToken, makeRequestWritable, m
     const { id } = req.params;
     const purchaseId = new ObjectId(id);
     await session.withTransaction(async () => {
-      await db.collection('purchases').updateOne({ _id: purchaseId }, { $set: { status: 'rejected' } }, { session });
+      await db.collection('purchases').updateOne({ _id: purchaseId, status: 'booked' }, { $set: { status: 'rejected' } }, { session }); // Updated to 'booked'
       await db.collection('tickets').updateMany({ purchaseId }, { $set: { status: 'rejected' } }, { session });
       await logActivity(req.user.userId, 'reject_purchase', { purchaseId });
     });
@@ -407,7 +407,7 @@ app.get('/api/tickets/status/:phone', makeRequestWritable, mongoSanitize(), asyn
     const purchaseIds = purchases.map((p) => p._id);
     const tickets = await db.collection('tickets').find({
       purchaseId: { $in: purchaseIds },
-      status: { $in: ['approved', 'pending-approval', 'rejected', 'payment-pending'] },
+      status: { $in: ['approved', 'booked', 'rejected', 'payment-pending'] }, // Updated to include 'booked'
     }).toArray();
     if (!tickets || tickets.length === 0) {
       return res.status(404).json({ message: 'Purchase found, but no matching tickets.' });
