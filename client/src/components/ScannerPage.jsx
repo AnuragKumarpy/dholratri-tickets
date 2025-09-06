@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import pageStyles from './EventPage.module.css';
+import styles from './ScannerPage.module.css';
 
 function ScannerPage() {
   const [scanResult, setScanResult] = useState(null);
@@ -25,18 +26,19 @@ function ScannerPage() {
 
       const onScanSuccess = async (decodedText) => {
         if (scanner && scanner.getState() === 2) {
-          scanner.clear().catch(err => console.error("Failed to clear scanner", err));
+          scanner.clear().catch((err) => console.error("Failed to clear scanner", err));
         }
 
         try {
           const token = localStorage.getItem('authToken');
           if (!token) return handleAuthError('No token found');
 
-          const response = await fetch('/api/verify', {
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
+          const response = await fetch(`${apiUrl}/api/verify`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`, // Fixed: Removed ₹
+              'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({ id: decodedText }),
           });
@@ -47,7 +49,6 @@ function ScannerPage() {
 
           const result = await response.json();
           setScanResult({ ...result, success: response.ok });
-
         } catch (err) {
           console.error("API call failed", err);
           setScanResult({ success: false, message: 'Network Error' });
@@ -62,14 +63,14 @@ function ScannerPage() {
 
     return () => {
       if (scanner && scanner.getState() === 2) {
-        scanner.clear().catch(err => console.error("Failed to clear scanner on unmount", err));
+        scanner.clear().catch((err) => console.error("Failed to clear scanner on unmount", err));
       }
     };
   }, [scanResult, handleAuthError]);
 
   if (scanResult) {
     return (
-      <div className={`${pageStyles.resultOverlay} ${scanResult.success ? pageStyles.success : pageStyles.error}`}>
+      <div className={`${styles.resultOverlay} ${scanResult.success ? styles.success : styles.error}`}>
         <h1>{scanResult.message}</h1>
         {scanResult.name && <h2>{scanResult.name}</h2>}
         <button onClick={() => setScanResult(null)} className={pageStyles.bookButton}>
