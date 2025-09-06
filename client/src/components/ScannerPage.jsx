@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'; // 1. Import useCallback
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import pageStyles from './EventPage.module.css';
@@ -7,14 +7,11 @@ function ScannerPage() {
   const [scanResult, setScanResult] = useState(null);
   const navigate = useNavigate();
 
-  // 2. Wrap handleAuthError in useCallback
-  // This memoizes the function, so its reference is stable across renders.
-  // It only changes if 'navigate' itself changes (which it won't).
   const handleAuthError = useCallback((error) => {
     console.error("Auth Error:", error);
     localStorage.removeItem('authToken');
     navigate('/login');
-  }, [navigate]); // Its dependency is navigate
+  }, [navigate]);
 
   useEffect(() => {
     if (scanResult) return;
@@ -39,16 +36,15 @@ function ScannerPage() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ₹{token}`,
+              'Authorization': `Bearer ${token}`, // Fixed: Removed ₹
             },
             body: JSON.stringify({ id: decodedText }),
           });
 
           if (response.status === 401 || response.status === 403) {
-            // Use the stable handleAuthError function
             return handleAuthError('Token invalid, logging out.');
           }
-          
+
           const result = await response.json();
           setScanResult({ ...result, success: response.ok });
 
@@ -69,14 +65,11 @@ function ScannerPage() {
         scanner.clear().catch(err => console.error("Failed to clear scanner on unmount", err));
       }
     };
-  // 3. Add the stable handleAuthError function to the dependency array
-  }, [scanResult, handleAuthError]); 
-
-  // --- Render logic is unchanged ---
+  }, [scanResult, handleAuthError]);
 
   if (scanResult) {
     return (
-      <div className={`₹{styles.resultOverlay} ₹{scanResult.success ? styles.success : styles.error}`}>
+      <div className={`${pageStyles.resultOverlay} ${scanResult.success ? pageStyles.success : pageStyles.error}`}>
         <h1>{scanResult.message}</h1>
         {scanResult.name && <h2>{scanResult.name}</h2>}
         <button onClick={() => setScanResult(null)} className={pageStyles.bookButton}>
