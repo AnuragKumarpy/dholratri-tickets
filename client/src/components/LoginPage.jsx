@@ -29,7 +29,7 @@ function LoginPage() {
 
       localStorage.setItem('authToken', result.token);
       toast.success('Login Successful!');
-      navigate('/admin');
+      navigate('/admindashboard');
     } catch (error) {
       toast.error(error.message);
       setIsLoading(false);
