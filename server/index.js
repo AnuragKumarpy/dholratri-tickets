@@ -302,7 +302,7 @@ app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeRequestWritable, m
   }
 });
 
-app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot), makeRequestWritable, mongoSanitize(), async (req, res) => {
+app.patch('/api/purchase/confirm/:id', uploadScreenshot.single('screenshot'), makeRequestWritable, mongoSanitize(), async (req, res) => {
   try {
     const { id } = req.params;
     const { utr } = req.body;
@@ -311,14 +311,14 @@ app.patch('/api/purchase/confirm/:id', handleMulterError(uploadScreenshot), make
     }
     const result = await db.collection('purchases').updateOne(
       { _id: new ObjectId(id), status: 'payment-pending' },
-      { $set: { utr, screenshotPath: req.file.path, status: 'booked' } } // Changed to 'booked'
+      { $set: { utr, screenshotPath: req.file.path, status: 'booked' } }
     );
     if (result.matchedCount === 0) {
       return res.status(404).json({ message: 'Pending purchase not found or already processed.' });
     }
     await db.collection('tickets').updateMany(
       { purchaseId: new ObjectId(id) },
-      { $set: { status: 'booked' } } // Changed to 'booked'
+      { $set: { status: 'booked' } }
     );
     res.status(200).json({ message: 'Booking received and marked as booked.' });
   } catch (error) {
