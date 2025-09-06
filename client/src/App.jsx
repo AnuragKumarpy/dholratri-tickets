@@ -24,7 +24,7 @@ function App() {
           <Route path="/terms-and-conditions" element={<TermsPage />} />
           {/* Protected Routes */}
           <Route
-            path="/admin"
+            path="/admindashboard"
             element={
               <ProtectedRoute>
                 <AdminDashboard />
@@ -43,7 +43,7 @@ function App() {
           <Route path="*" element={<div>404: Page Not Found</div>} />
         </Routes>
       </main>
-      <Footer />
+    <Footer />
     </>
   );
 }
