@@ -1,25 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './AdminDashboard.module.css';
-import EventSettings from './EventSettings'; // 1. IMPORT our new component
+import EventSettings from './EventSettings';
 
 function AdminDashboard() {
   const [purchases, setPurchases] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleAuthError = (error) => { /* ... (unchanged) ... */
+  const handleAuthError = (error) => {
     console.error("Auth Error:", error);
     localStorage.removeItem('authToken');
     navigate('/login');
   };
 
-  const getPendingPurchases = async () => { /* ... (unchanged) ... */
+  const getPendingPurchases = async () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      if (!token) { return handleAuthError('No token found'); }
-      const response = await fetch('/api/admin/purchases', {
+      if (!token) {
+        return handleAuthError('No token found');
+      }
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
+      const response = await fetch(`${apiUrl}/api/admin/purchases`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.status === 401 || response.status === 403) {
@@ -37,38 +40,41 @@ function AdminDashboard() {
 
   useEffect(() => {
     getPendingPurchases();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []);
 
-  const handleApprove = async (id) => { /* ... (unchanged) ... */
+  const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`/api/admin/purchases/${id}/approve`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
+      const response = await fetch(`${apiUrl}/api/admin/purchases/${id}/approve`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.status === 401 || response.status === 403) return handleAuthError('Token error');
-      getPendingPurchases(); 
+      if (!response.ok) throw new Error('Failed to approve purchase');
+      getPendingPurchases();
     } catch (error) {
       console.error("Approve Error:", error);
     }
   };
 
-  const handleReject = async (id) => { /* ... (unchanged) ... */
+  const handleReject = async (id) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`/api/admin/purchases/${id}/reject`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
+      const response = await fetch(`${apiUrl}/api/admin/purchases/${id}/reject`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.status === 401 || response.status === 403) return handleAuthError('Token error');
+      if (!response.ok) throw new Error('Failed to reject purchase');
       getPendingPurchases();
     } catch (error) {
       console.error("Reject Error:", error);
     }
   };
 
-  const handleLogout = () => { /* ... (unchanged) ... */
+  const handleLogout = () => {
     localStorage.removeItem('authToken');
     navigate('/login');
   };
@@ -87,10 +93,8 @@ function AdminDashboard() {
         </div>
       </div>
       
-      {/* 2. RENDER THE NEW SETTINGS COMPONENT */}
       <EventSettings />
 
-      {/* --- This is your existing pending approvals list --- */}
       <div className={styles.pendingApprovals}>
         <h2>Pending Approvals ({purchases.length})</h2>
         {purchases.map((purchase) => (
@@ -99,7 +103,6 @@ function AdminDashboard() {
             <p><strong>Ticket Type:</strong> <span style={{ textTransform: 'capitalize' }}>{purchase.ticketType}</span> ({purchase.ticketCount})</p>
             <p><strong>Phone:</strong> {purchase.phone}</p>
             <p><strong>UTR:</strong> {purchase.utr}</p>
-            {/* Note: Screenshot link will be a Cloudinary URL after you upload one */}
             <a href={purchase.screenshotPath} target="_blank" rel="noopener noreferrer" className={styles.screenshotLink}>
               View Screenshot
             </a>
