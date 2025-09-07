@@ -39,13 +39,13 @@ function Footer() {
 
   return (
     <>
-      <footer className={styles.footerBar}>
-        <div className={styles.contactTrigger} onClick={handleToggle}>
+      <footer className={styles.footerBar} onClick={handleToggle}>
+        <div className={styles.contactTrigger}>
           <PhoneIcon />
         </div>
       </footer>
       {isExpanded && (
-        <div className={styles.contactCard}>
+        <div className={`${styles.contactCard} ${styles.active}`}>
           <div className={styles.cardHeader}>
             <h3>Contact Us</h3>
             <button onClick={handleToggle} className={styles.closeButton}>
@@ -56,17 +56,14 @@ function Footer() {
             <p>&copy; {new Date().getFullYear()} DholRatri | {contactData.address}</p>
           </div>
           <div className={styles.socialLinks}>
-            <a href={contactData.instagram.url} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+            <a href={contactData.instagram.url} target="_blank" rel="noopener noreferrer" className={styles.socialCircle}>
               <InstagramIcon />
-              <span>Instagram</span>
             </a>
-            <a href={`mailto:${contactData.email}`} className={styles.socialLink}>
+            <a href={`mailto:${contactData.email}`} className={styles.socialCircle}>
               <EmailIcon />
-              <span>Email</span>
             </a>
-            <a href={`tel:${contactData.phone.replace(/\s/g, '')}`} className={styles.socialLink}>
+            <a href={`tel:${contactData.phone.replace(/\s/g, '')}`} className={styles.socialCircle}>
               <PhoneIcon />
-              <span>Phone</span>
             </a>
           </div>
           <div className={styles.additionalLinks}>
