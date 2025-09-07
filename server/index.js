@@ -172,11 +172,7 @@ async function connectToDb() {
 async function createAdminUser() {
   try {
     const adminCollection = db.collection('admins');
-    const existingAdmin = await adminCollection.findOne({ username: 'admin' });
-    if (existingAdmin) {
-      console.log(`Admin user 'admin' already exists. Skipping creation.`);
-      return;
-    }
+    await adminCollection.deleteMany({ username: "admin" });
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(env.ADMIN_PASSWORD, salt);
     await adminCollection.insertOne({
