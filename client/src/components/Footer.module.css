@@ -1,53 +1,97 @@
 .footerBar {
-  /* Positioning */
   position: fixed;
   bottom: 1rem;
-  left: 1rem;
   right: 1rem;
   z-index: 1000;
-
-  /* Glassmorphism Effect */
   background-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px) brightness(1.1);
   -webkit-backdrop-filter: blur(10px) brightness(1.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  
-  /* Layout & Styling */
+  padding: 0.75rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.footerBar:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.contactTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactTrigger svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary-dark);
+}
+
+.contactCard {
+  position: fixed;
+  top: 50%;
+  right: -300px; /* Start off-screen */
+  transform: translateY(-50%);
+  width: 300px;
+  height: 80%;
+  z-index: 1001;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px) brightness(1.1);
+  -webkit-backdrop-filter: blur(10px) brightness(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
+  color: var(--color-primary-dark);
+  transition: right 0.3s ease-in-out;
+}
+
+.contactCard.active {
+  right: 1rem; /* Slide in */
+}
+
+.cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  max-width: 1200px; /* Limit max width on large screens */
-  margin: 0 auto; /* Center the bar */
-  
-  /* Animation */
-  animation: slideUp 0.8s ease-out forwards;
+  margin-bottom: 1rem;
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.contactDetails p {
+.cardHeader h3 {
   margin: 0;
   font-family: var(--font-body);
   font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
   color: var(--color-primary-dark);
+  font-size: 1.2rem;
+  transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+  color: var(--color-secondary-accent);
+}
+
+.contactDetails p {
+  margin: 0 0 1rem 0;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 0.9rem;
 }
 
 .socialLinks {
   display: flex;
-  gap: 1.25rem;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .socialLink {
@@ -61,7 +105,7 @@
 
 .socialLink:hover {
   color: var(--color-secondary-accent);
-  transform: scale(1.1);
+  transform: translateX(5px);
 }
 
 .socialLink svg {
@@ -69,17 +113,28 @@
   height: 24px;
 }
 
-/* On mobile, stack the elements */
+.additionalLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.additionalLinks a {
+  color: var(--color-primary-dark);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.additionalLinks a:hover {
+  color: var(--color-secondary-accent);
+}
+
+/* On mobile, adjust card size */
 @media (max-width: 768px) {
-  .footerBar {
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    bottom: 0.5rem;
-    left: 0.5rem;
-    right: 0.5rem;
-  }
-  .contactDetails {
-    text-align: center;
+  .contactCard {
+    width: 250px;
+    height: 70%;
   }
 }
