@@ -254,7 +254,7 @@ function BookingForm() {
             <p className={styles.successText}>
               You can check the status of your booking at any time using your phone number.
             </p>
-                        <p>For any Query Contact Below Given Details</p>
+                        <p>For any Query Contact +918210463197</p>
 
             
             <div className={styles.successActions}>
