@@ -1,7 +1,7 @@
+import { useState } from 'react';
 import styles from './Footer.module.css';
-import contactData from '../contactInfo.json'; // Import our new JSON data
+import contactData from '../contactInfo.json';
 
-// --- SVG Icon Components (lightweight and self-contained) ---
 const InstagramIcon = () => (
   <svg role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -23,24 +23,59 @@ const PhoneIcon = () => (
   </svg>
 );
 
+const CloseIcon = () => (
+  <svg role="img" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
 function Footer() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <footer className={styles.footerBar}>
-      <div className={styles.contactDetails}>
-        <p>&copy; {new Date().getFullYear()} DholRatri | {contactData.address}</p>
-      </div>
-      <div className={styles.socialLinks}>
-        <a href={contactData.instagram.url} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
-          <InstagramIcon />
-        </a>
-        <a href={`mailto:${contactData.email}`} className={styles.socialLink}>
-          <EmailIcon />
-        </a>
-        <a href={`tel:${contactData.phone.replace(/\s/g, '')}`} className={styles.socialLink}>
+    <>
+      <footer className={styles.footerBar}>
+        <div className={styles.contactTrigger} onClick={handleToggle}>
           <PhoneIcon />
-        </a>
-      </div>
-    </footer>
+        </div>
+      </footer>
+      {isExpanded && (
+        <div className={styles.contactCard}>
+          <div className={styles.cardHeader}>
+            <h3>Contact Us</h3>
+            <button onClick={handleToggle} className={styles.closeButton}>
+              <CloseIcon />
+            </button>
+          </div>
+          <div className={styles.contactDetails}>
+            <p>&copy; {new Date().getFullYear()} DholRatri | {contactData.address}</p>
+          </div>
+          <div className={styles.socialLinks}>
+            <a href={contactData.instagram.url} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>
+              <InstagramIcon />
+              <span>Instagram</span>
+            </a>
+            <a href={`mailto:${contactData.email}`} className={styles.socialLink}>
+              <EmailIcon />
+              <span>Email</span>
+            </a>
+            <a href={`tel:${contactData.phone.replace(/\s/g, '')}`} className={styles.socialLink}>
+              <PhoneIcon />
+              <span>Phone</span>
+            </a>
+          </div>
+          <div className={styles.additionalLinks}>
+            <a href="#" onClick={(e) => { e.preventDefault(); alert('Check Status feature coming soon!'); }}>Check Status</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); alert('Book Ticket feature coming soon!'); }}>Book Ticket</a>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
