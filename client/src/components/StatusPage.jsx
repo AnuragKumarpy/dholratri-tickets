@@ -6,7 +6,7 @@ import styles from './StatusPage.module.css';
 import formStyles from './BookingForm.module.css';
 import pageStyles from './EventPage.module.css';
 import TicketPass from './TicketPass.jsx';
-import CoupleTicketPass from './CoupleTicketPass.jsx'; // <-- 1. IMPORT THE NEW COMPONENT
+import CoupleTicketPass from './CoupleTicketPass.jsx'; // This import is still needed
 import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
@@ -43,7 +43,6 @@ function StatusPage() {
       }
       const apiUrl = import.meta.env.VITE_API_URL || 'https://dholratri-tickets.onrender.com';
       const response = await fetch(`${apiUrl}/api/tickets/status/${cleanPhone}`);
-      console.log('API Response:', await response.clone().text()); // Debug log
       const data = await response.json();
 
       if (response.ok) {
@@ -60,28 +59,41 @@ function StatusPage() {
     }
   };
 
-  // --- NEW GROUPING LOGIC STARTS HERE ---
+  // --- NEW ROBUST GROUPING LOGIC ---
   const approvedTickets = tickets.filter((t) => t.status === 'approved');
   const pendingTickets = tickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
   const rejectedTickets = tickets.filter((t) => t.status === 'rejected');
 
-  // 1. Separate solo tickets from couple tickets
-  const soloTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
-  const coupleTickets = approvedTickets.filter(t => t.ticketType === 'couple');
+  // 1. Separate all tickets that are NOT couple passes
+  const allSoloTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
+  
+  // 2. Get ONLY the couple tickets
+  const allCoupleTickets = approvedTickets.filter(t => t.ticketType === 'couple');
 
-  // 2. Group couple tickets together by their purchaseId
-  const coupleTicketGroups = coupleTickets.reduce((acc, ticket) => {
-    const purchaseId = ticket.purchaseId.toString(); // Use the string ID as the key
-    if (!acc[purchaseId]) {
-      acc[purchaseId] = []; // Create a new array for this purchase group
-    }
+  // 3. Group all couple tickets by their purchaseId
+  const coupleTicketGroups = allCoupleTickets.reduce((acc, ticket) => {
+    const purchaseId = ticket.purchaseId.toString();
+    if (!acc[purchaseId]) acc[purchaseId] = [];
     acc[purchaseId].push(ticket);
     return acc;
   }, {});
 
-  // 3. Convert the groups object back into an array of groups
-  // This gives us an array like: [ [ticketA, ticketB], [ticketC, ticketD] ]
-  const couplePasses = Object.values(coupleTicketGroups); 
+  // 4. Partition the groups into valid pairs and orphans
+  const validCouplePasses = []; // Groups with exactly 2 tickets
+  const orphanCoupleTickets = []; // Couple tickets from incomplete groups
+
+  Object.values(coupleTicketGroups).forEach(group => {
+    if (group.length === 2) {
+      validCouplePasses.push(group); // This is a valid pair
+    } else {
+      // This group is incomplete (e.g., only 1 ticket). Push its tickets
+      // to be rendered as solo passes so nothing breaks.
+      orphanCoupleTickets.push(...group);
+    }
+  });
+
+  // 5. Create the final, safe list of all tickets to be rendered as solos
+  const finalSoloTicketsToRender = [...allSoloTickets, ...orphanCoupleTickets];
   // --- END OF NEW LOGIC ---
 
 
@@ -102,6 +114,8 @@ function StatusPage() {
           </button>
         </form>
         {message && <p className={pageStyles.description}>{message}</p>}
+        
+        {/* Pending/Rejected logic is unchanged */}
         {pendingTickets.length > 0 && (
           <div className={`${styles.statusBox} print-hide`}>
             <Lottie options={lottieOptions} height={200} width={200} />
@@ -123,7 +137,7 @@ function StatusPage() {
         )}
 
         {/* This check now correctly checks BOTH lists */}
-        {(couplePasses.length > 0 || soloTickets.length > 0) && (
+        {(validCouplePasses.length > 0 || finalSoloTicketsToRender.length > 0) && (
           <>
             <div className={`${styles.passListHeader} print-hide`}>
               <h2 className={styles.statusTitle}>Your Official Pass(es)</h2>
@@ -134,8 +148,8 @@ function StatusPage() {
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
                 
-                {/* --- 1. RENDER ALL COUPLE PASSES (AS GROUPS) --- */}
-                {couplePasses.map((ticketGroup, index) => (
+                {/* --- 1. RENDER ALL VALID COUPLE PASSES (AS GROUPS) --- */}
+                {validCouplePasses.map((ticketGroup, index) => (
                   <motion.div
                     key={ticketGroup[0].purchaseId} // Use the common purchaseId as the key
                     initial={{ opacity: 0, y: 50 }}
@@ -143,22 +157,19 @@ function StatusPage() {
                     transition={{ duration: 0.5, delay: index * 0.2 }}
                     exit={{ opacity: 0 }}
                   >
-                    {/* Send the whole group (both tickets) to the NEW component */}
                     <CoupleTicketPass tickets={ticketGroup} /> 
                   </motion.div>
                 ))}
 
-                {/* --- 2. RENDER ALL SOLO PASSES (INDIVIDUALLY) --- */}
-                {soloTickets.map((ticket, index) => (
+                {/* --- 2. RENDER ALL FINAL SOLO PASSES (Original Solos + Orphaned Couples) --- */}
+                {finalSoloTicketsToRender.map((ticket, index) => (
                   <motion.div
                     key={ticket._id} // Use the individual ticket ID as key
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    // Continue the animation delay from where the couple passes left off
-                    transition={{ duration: 0.5, delay: (index + couplePasses.length) * 0.2 }} 
+                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length) * 0.2 }} 
                     exit={{ opacity: 0 }}
                   >
-                    {/* Send the single ticket to the OLD component */}
                     <TicketPass ticket={ticket} /> 
                   </motion.div>
                 ))}
