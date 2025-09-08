@@ -5,10 +5,19 @@ import eventConfig from '../eventConfig.json';
 // This is now just a display component. It doesn't know how to print itself.
 function TicketPass({ ticket }) {
   const tierDetails = eventConfig.tiers.find(t => t.id === ticket.ticketType);
-  const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
-
-  // Removed the ref from the div
-  return (
+   const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
+  
+    // --- NEW DESIGN LOGIC ---
+    const tierStyleMap = {
+      'general': styles.generalPass,
+      'premium': styles.premiumPass,
+      'luxury': styles.luxuryPass,
+    };
+    // Get the correct style class, or default to an empty string
+    const dedicatedStyleClass = tierStyleMap[ticket.ticketType] || '';
+    // --- END NEW LOGIC ---
+    // Removed the ref from the div
+    return (
     <div className={styles.ticketPass}>
       <div className={styles.mainInfo}>
         <div className={styles.header}>
