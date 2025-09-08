@@ -183,7 +183,6 @@ function BookingForm() {
                     type="text" 
                     placeholder={`Attendee ${index + 1} Name (as per ID)`} 
                     value={attendee.name} 
-                    {/* This now correctly points to your new function */}
                     onChange={(e) => handleAttendeeFieldChange(index, 'name', e.target.value)} 
                     required 
                   />
