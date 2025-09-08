@@ -6,7 +6,7 @@ import styles from './StatusPage.module.css';
 import formStyles from './BookingForm.module.css';
 import pageStyles from './EventPage.module.css';
 import TicketPass from './TicketPass.jsx';
-import CoupleTicketPass from './CoupleTicketPass.jsx'; // This import is still needed
+import CoupleTicketPass from './CoupleTicketPass.jsx'; 
 import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
@@ -52,7 +52,7 @@ function StatusPage() {
         setMessage(data.message || 'Server error');
       }
     } catch (error) {
-      console.error('Status check failed:', error);
+      console.error('Status check failed:', error); // This log is in your console
       setMessage('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -64,35 +64,33 @@ function StatusPage() {
   const pendingTickets = tickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
   const rejectedTickets = tickets.filter((t) => t.status === 'rejected');
 
-  // 1. Separate all tickets that are NOT couple passes
   const allSoloTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
-  
-  // 2. Get ONLY the couple tickets
   const allCoupleTickets = approvedTickets.filter(t => t.ticketType === 'couple');
 
-  // 3. Group all couple tickets by their purchaseId
+  // Group all couple tickets by purchaseId
   const coupleTicketGroups = allCoupleTickets.reduce((acc, ticket) => {
-    const purchaseId = ticket.purchaseId.toString();
-    if (!acc[purchaseId]) acc[purchaseId] = [];
-    acc[purchaseId].push(ticket);
+    // --- THIS IS THE FIX ---
+    // Safely check if ticket and purchaseId exist before trying to group
+    if (ticket && ticket.purchaseId) { 
+      const purchaseId = ticket.purchaseId.toString();
+      if (!acc[purchaseId]) acc[purchaseId] = [];
+      acc[purchaseId].push(ticket);
+    }
+    // --- END OF FIX ---
     return acc;
   }, {});
 
-  // 4. Partition the groups into valid pairs and orphans
-  const validCouplePasses = []; // Groups with exactly 2 tickets
-  const orphanCoupleTickets = []; // Couple tickets from incomplete groups
+  const validCouplePasses = []; 
+  const orphanCoupleTickets = []; 
 
   Object.values(coupleTicketGroups).forEach(group => {
     if (group.length === 2) {
-      validCouplePasses.push(group); // This is a valid pair
+      validCouplePasses.push(group); 
     } else {
-      // This group is incomplete (e.g., only 1 ticket). Push its tickets
-      // to be rendered as solo passes so nothing breaks.
       orphanCoupleTickets.push(...group);
     }
   });
 
-  // 5. Create the final, safe list of all tickets to be rendered as solos
   const finalSoloTicketsToRender = [...allSoloTickets, ...orphanCoupleTickets];
   // --- END OF NEW LOGIC ---
 
@@ -115,7 +113,6 @@ function StatusPage() {
         </form>
         {message && <p className={pageStyles.description}>{message}</p>}
         
-        {/* Pending/Rejected logic is unchanged */}
         {pendingTickets.length > 0 && (
           <div className={`${styles.statusBox} print-hide`}>
             <Lottie options={lottieOptions} height={200} width={200} />
@@ -136,7 +133,6 @@ function StatusPage() {
           </div>
         )}
 
-        {/* This check now correctly checks BOTH lists */}
         {(validCouplePasses.length > 0 || finalSoloTicketsToRender.length > 0) && (
           <>
             <div className={`${styles.passListHeader} print-hide`}>
@@ -148,10 +144,10 @@ function StatusPage() {
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
                 
-                {/* --- 1. RENDER ALL VALID COUPLE PASSES (AS GROUPS) --- */}
+                {/* 1. RENDER ALL VALID COUPLE PASSES (AS GROUPS) */}
                 {validCouplePasses.map((ticketGroup, index) => (
                   <motion.div
-                    key={ticketGroup[0].purchaseId} // Use the common purchaseId as the key
+                    key={ticketGroup[0].purchaseId} 
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.2 }}
@@ -161,10 +157,10 @@ function StatusPage() {
                   </motion.div>
                 ))}
 
-                {/* --- 2. RENDER ALL FINAL SOLO PASSES (Original Solos + Orphaned Couples) --- */}
+                {/* 2. RENDER ALL FINAL SOLO PASSES (Original Solos + Orphaned Couples) */}
                 {finalSoloTicketsToRender.map((ticket, index) => (
                   <motion.div
-                    key={ticket._id} // Use the individual ticket ID as key
+                    key={ticket._id} 
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: (index + validCouplePasses.length) * 0.2 }} 
