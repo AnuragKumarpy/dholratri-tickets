@@ -6,6 +6,7 @@ import styles from './StatusPage.module.css';
 import formStyles from './BookingForm.module.css';
 import pageStyles from './EventPage.module.css';
 import TicketPass from './TicketPass.jsx';
+import CoupleTicketPass from './CoupleTicketPass.jsx'; // <-- 1. IMPORT THE NEW COMPONENT
 import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
@@ -59,9 +60,30 @@ function StatusPage() {
     }
   };
 
+  // --- NEW GROUPING LOGIC STARTS HERE ---
   const approvedTickets = tickets.filter((t) => t.status === 'approved');
   const pendingTickets = tickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
   const rejectedTickets = tickets.filter((t) => t.status === 'rejected');
+
+  // 1. Separate solo tickets from couple tickets
+  const soloTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
+  const coupleTickets = approvedTickets.filter(t => t.ticketType === 'couple');
+
+  // 2. Group couple tickets together by their purchaseId
+  const coupleTicketGroups = coupleTickets.reduce((acc, ticket) => {
+    const purchaseId = ticket.purchaseId.toString(); // Use the string ID as the key
+    if (!acc[purchaseId]) {
+      acc[purchaseId] = []; // Create a new array for this purchase group
+    }
+    acc[purchaseId].push(ticket);
+    return acc;
+  }, {});
+
+  // 3. Convert the groups object back into an array of groups
+  // This gives us an array like: [ [ticketA, ticketB], [ticketC, ticketD] ]
+  const couplePasses = Object.values(coupleTicketGroups); 
+  // --- END OF NEW LOGIC ---
+
 
   return (
     <div className={pageStyles.pageContainer}>
@@ -85,7 +107,7 @@ function StatusPage() {
             <Lottie options={lottieOptions} height={200} width={200} />
             <h2 className={styles.statusTitle}>Your Booking is Under Review</h2>
             <p className={pageStyles.description}>
-              We have received your payment confirmation for {pendingTickets.length} ticket(s).
+              We have received your payment confirmation. Your pass is pending approval.
             </p>
           </div>
         )}
@@ -99,7 +121,9 @@ function StatusPage() {
             </p>
           </div>
         )}
-        {approvedTickets.length > 0 && (
+
+        {/* This check now correctly checks BOTH lists */}
+        {(couplePasses.length > 0 || soloTickets.length > 0) && (
           <>
             <div className={`${styles.passListHeader} print-hide`}>
               <h2 className={styles.statusTitle}>Your Official Pass(es)</h2>
@@ -109,17 +133,36 @@ function StatusPage() {
             </div>
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
-                {approvedTickets.map((ticket, index) => (
+                
+                {/* --- 1. RENDER ALL COUPLE PASSES (AS GROUPS) --- */}
+                {couplePasses.map((ticketGroup, index) => (
                   <motion.div
-                    key={ticket._id}
+                    key={ticketGroup[0].purchaseId} // Use the common purchaseId as the key
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.2 }}
                     exit={{ opacity: 0 }}
                   >
-                    <TicketPass ticket={ticket} />
+                    {/* Send the whole group (both tickets) to the NEW component */}
+                    <CoupleTicketPass tickets={ticketGroup} /> 
                   </motion.div>
                 ))}
+
+                {/* --- 2. RENDER ALL SOLO PASSES (INDIVIDUALLY) --- */}
+                {soloTickets.map((ticket, index) => (
+                  <motion.div
+                    key={ticket._id} // Use the individual ticket ID as key
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    // Continue the animation delay from where the couple passes left off
+                    transition={{ duration: 0.5, delay: (index + couplePasses.length) * 0.2 }} 
+                    exit={{ opacity: 0 }}
+                  >
+                    {/* Send the single ticket to the OLD component */}
+                    <TicketPass ticket={ticket} /> 
+                  </motion.div>
+                ))}
+                
               </AnimatePresence>
             </div>
           </>
