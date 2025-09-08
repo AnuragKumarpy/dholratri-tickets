@@ -247,3 +247,57 @@
 .couponError {
   color: var(--color-error, #dc2626); /* Red color */
 }
+/* --- Styles for New Attendee Grouping --- */
+
+.attendeeInputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #fdfdfd; /* A very light background to group them */
+  border: 1px solid var(--color-light-grey);
+  padding: var(--spacing-md);
+  border-radius: 0.5rem;
+}
+
+.genderSelector {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-text-dark);
+  font-weight: 600;
+  padding-top: 0.5rem;
+}
+
+.genderSelector label {
+  display: flex; /* This aligns the radio button and the text nicely */
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+/* This copies your existing radio style from the tier selector */
+.genderSelector input[type="radio"] {
+  appearance: none;
+  width: 1.15em;
+  height: 1.15em;
+  border: 2px solid var(--color-primary-dark);
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  margin: 0;
+}
+
+.genderSelector input[type="radio"]::before {
+  content: "";
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--color-primary-dark);
+}
+
+.genderSelector input[type="radio"]:checked::before {
+  transform: scale(1);
+}
