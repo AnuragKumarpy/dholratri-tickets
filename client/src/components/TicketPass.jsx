@@ -16,10 +16,16 @@ function TicketPass({ ticket }) {
           <h2>{eventConfig.eventName}</h2>
         </div>
         
+        {/* --- THIS BLOCK IS UPDATED WITH PREFIX LOGIC --- */}
         <div className={styles.attendeeInfo}>
-          <h3>{ticket.attendeeName}</h3>
+          <h3>
+            {/* --- NEW PREFIX LOGIC --- */}
+            {ticket.gender === 'male' ? 'Mr. ' : ticket.gender === 'female' ? 'Miss. ' : ''}
+            {ticket.attendeeName}
+          </h3>
           <p>Pass Holder</p>
         </div>
+        {/* --- END OF UPDATED BLOCK --- */}
 
         <div className={styles.details}>
           <div>
