@@ -438,14 +438,21 @@ app.post('/api/verify', verifyToken, makeRequestWritable, mongoSanitize(), async
     const ticket = await db.collection('tickets').findOne({ _id: new ObjectId(id) });
     if (!ticket) return res.status(404).json({ valid: false, message: 'Ticket Not Found' });
     if (ticket.status !== 'approved') return res.status(403).json({ valid: false, message: `Ticket status is: ${ticket.status.toUpperCase()}` });
-    if (ticket.checkedIn) return res.status(409).json({ valid: false, message: 'Ticket Already Checked In', name: ticket.attendeeName });
+    if (ticket.checkedIn) return res.status(409).json({ valid: false, message: 'Ticket Already Checked In', name: displayName });
+
+        // --- ADD THIS NEW LOGIC BLOCK ---
+    let displayName = ticket.attendeeName;
+    if (ticket.gender) { // This checks if the gender field exists (it will be null for old tickets)
+      displayName = (ticket.gender === 'male' ? 'Mr. ' : 'Miss. ') + ticket.attendeeName;
+    }
+    // --- END OF NEW BLOCK ---
 
     await db.collection('tickets').updateOne(
       { _id: new ObjectId(id) },
       { $set: { checkedIn: true, checkedInAt: new Date() } }
     );
     await logActivity(req.user.userId, 'verify_ticket', { ticketId: id, attendeeName: ticket.attendeeName });
-    res.status(200).json({ valid: true, message: 'Check-in Successful', name: ticket.attendeeName });
+    res.status(200).json({ valid: true, message: 'Check-in Successful', name: displayName });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Verification error:`, error);
     res.status(500).json({ message: 'Server Error' });
