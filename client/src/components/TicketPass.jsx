@@ -1,40 +1,37 @@
-// Removed all imports for useRef and ReactToPrint
 import styles from './TicketPass.module.css';
 import eventConfig from '../eventConfig.json';
 
-// This is now just a display component. It doesn't know how to print itself.
 function TicketPass({ ticket }) {
   const tierDetails = eventConfig.tiers.find(t => t.id === ticket.ticketType);
-   const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
-  
-    // --- NEW DESIGN LOGIC ---
-    const tierStyleMap = {
-      'general': styles.generalPass,
-      'premium': styles.premiumPass,
-      'luxury': styles.luxuryPass,
-    };
-    // Get the correct style class, or default to an empty string
-    const dedicatedStyleClass = tierStyleMap[ticket.ticketType] || '';
-    // --- END NEW LOGIC ---
-    // Removed the ref from the div
-    return (
-    <div className={styles.ticketPass}>
+  const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
+
+  // --- NEW DESIGN LOGIC ---
+  const tierStyleMap = {
+    'general': styles.generalPass,
+    'premium': styles.premiumPass,
+    'luxury': styles.luxuryPass,
+  };
+  // Get the correct style class, or default to an empty string
+  const dedicatedStyleClass = tierStyleMap[ticket.ticketType] || '';
+  // --- END NEW LOGIC ---
+
+  return (
+    // The main className is now dynamic to add the background color
+    <div className={`${styles.ticketPass} ${dedicatedStyleClass}`}>
       <div className={styles.mainInfo}>
         <div className={styles.header}>
           <span>{eventConfig.location} Event</span>
           <h2>{eventConfig.eventName}</h2>
         </div>
         
-        {/* --- THIS BLOCK IS UPDATED WITH PREFIX LOGIC --- */}
+        {/* This block includes the Mr./Miss. prefix logic */}
         <div className={styles.attendeeInfo}>
           <h3>
-            {/* --- NEW PREFIX LOGIC --- */}
             {ticket.gender === 'male' ? 'Mr. ' : ticket.gender === 'female' ? 'Miss. ' : ''}
             {ticket.attendeeName}
           </h3>
           <p>Pass Holder</p>
         </div>
-        {/* --- END OF UPDATED BLOCK --- */}
 
         <div className={styles.details}>
           <div>
@@ -54,9 +51,6 @@ function TicketPass({ ticket }) {
             <span style={{ fontSize: '0.9rem', fontFamily: 'monospace' }}>{ticket._id}</span>
           </div>
         </div>
-        
-        {/* Removed the print button container and ReactToPrint component */}
-
       </div>
 
       <div className={styles.qrStub}>
