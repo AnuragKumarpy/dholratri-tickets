@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // <-- IMPORT useEffect
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import styles from './BookingForm.module.css';
@@ -6,11 +6,9 @@ import eventPageStyles from './EventPage.module.css';
 import eventConfig from '../eventConfig.json'; 
 import paymentQrCode from '../assets/payment-qr.png'; 
 
-// --- CHANGE FROM STEP 4 ---
 const defaultAttendee = { name: '', gender: 'male' };
 
 function BookingForm() {
-  // === All component state (unchanged) ===
   const [phone, setPhone] = useState('');
   const [attendees, setAttendees] = useState([{ ...defaultAttendee }]);
   const [selectedTierId, setSelectedTierId] = useState(eventConfig.tiers[0].id);
@@ -24,14 +22,28 @@ function BookingForm() {
   const [purchaseId, setPurchaseId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- REPLACEMENT FUNCTION FROM STEP 4 ---
+  // --- NEW useEffect HOOK TO OVERRIDE ATTENDEE COUNT ---
+  useEffect(() => {
+    if (selectedTierId === 'couple') {
+      // If "Couple Pass" is selected, force exactly two attendees
+      setAttendees([
+        { ...defaultAttendee }, 
+        { ...defaultAttendee }
+      ]);
+    } else {
+      // If any other pass is selected, reset to one attendee
+      setAttendees([{ ...defaultAttendee }]);
+    }
+  }, [selectedTierId]); // This logic runs every time the selectedTierId changes
+
+  // --- State handler (Unchanged) ---
   const handleAttendeeFieldChange = (index, field, value) => {
     const newAttendees = [...attendees];
     newAttendees[index][field] = value;
     setAttendees(newAttendees);
   };
   
-  // --- Attendee Functions (Unchanged) ---
+  // --- Attendee Functions (Unchanged, but our UI will now hide them) ---
   const addAttendee = () => {
     setAttendees([...attendees, { ...defaultAttendee }]);
   };
@@ -40,38 +52,45 @@ function BookingForm() {
     setAttendees(newAttendees);
   };
 
-  // --- !! PRICE CALCULATION LOGIC (Unchanged) !! ---
+  // --- !! UPDATED PRICE CALCULATION LOGIC !! ---
   const selectedTier = eventConfig.tiers.find(t => t.id === selectedTierId);
-  const baseTotal = selectedTier.price * attendees.length;
+  
+  // NEW CONDITIONAL LOGIC FOR PRICE
+  let baseTotal;
+  if (selectedTier.id === 'couple') {
+    // For couple pass, the price is the total, not per-person
+    baseTotal = selectedTier.price;
+  } else {
+    // For all other passes, use the original logic
+    baseTotal = selectedTier.price * attendees.length;
+  }
   
   let calculatedDiscount = 0;
   let couponDisplayMessage = "";
 
-  // 1. Define our validation dates
   const currentDate = new Date(); 
-  // Note: Month is 0-indexed (8 = September). This is "Sept 16, 2025, 00:00:00"
-  // The coupon is valid as long as the current time is LESS than this moment.
   const expiryDate = new Date('2025-09-16T00:00:00'); 
-  
   const isCouponCodeCorrect = couponCode.trim().toLowerCase() === 'earlybird';
   const isDateValid = currentDate < expiryDate;
 
-  // 2. Update the logic to check both code and date
   if (isCouponCodeCorrect && isDateValid) {
-    // SUCCESS: Code is right AND it's not expired
-    calculatedDiscount = attendees.length * 100; // ₹100 off per ticket
-    couponDisplayMessage = `Congrats! "EarlyBird" saved you ₹${calculatedDiscount}!`;
+    // Logic Changed: For couple pass, discount is flat. For others, per-ticket.
+    if (selectedTier.id === 'couple') {
+      calculatedDiscount = 200; // Example: Flat ₹200 off for a couple pass
+      couponDisplayMessage = `Congrats! "EarlyBird" saved your couple pass ₹${calculatedDiscount}!`;
+    } else {
+      calculatedDiscount = attendees.length * 100; // Original: ₹100 off per ticket
+      couponDisplayMessage = `Congrats! "EarlyBird" saved you ₹${calculatedDiscount}!`;
+    }
   } else if (isCouponCodeCorrect && !isDateValid) {
-    // FAILURE: Code is right but it IS expired
     couponDisplayMessage = "Sorry, the 'EarlyBird' coupon has expired.";
   } else if (couponCode.trim() !== "") {
-    // FAILURE: Code is wrong
     couponDisplayMessage = "Invalid coupon code.";
   }
   
   const finalTotal = baseTotal - calculatedDiscount; // This is our new total
 
-  // --- FORM SUBMISSION LOGIC (CHANGES FROM STEP 6) ---
+  // --- FORM SUBMISSION LOGIC (Unchanged from our last update) ---
   const handleStep1Submit = async (event) => {
     event.preventDefault();
     if (!agreeTnc) {
@@ -80,7 +99,6 @@ function BookingForm() {
     }
     setIsLoading(true);
     
-    // --- CHANGE FROM STEP 6 ---
     const attendeeObjects = attendees.map(a => ({ name: a.name.trim(), gender: a.gender }));
     
     try {
@@ -89,11 +107,10 @@ function BookingForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: phone.trim(),
-          // --- CHANGE FROM STEP 6 ---
           attendees: attendeeObjects, 
           ticketType: selectedTier.id,
           wantsMarketingUpdates: agreeWhatsapp,
-          appliedCoupon: isCouponCodeCorrect && isDateValid ? 'earlybird' : 'none', // Only log valid coupons
+          appliedCoupon: isCouponCodeCorrect && isDateValid ? 'earlybird' : 'none', 
           discountAmount: calculatedDiscount,
           finalAmountPaid: finalTotal 
         }),
@@ -112,6 +129,7 @@ function BookingForm() {
 
   // --- HandleStep2Submit (Unchanged) ---
   const handleStep2Submit = async (event) => {
+    // (This function is exactly the same as before, no changes needed)
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
@@ -135,6 +153,7 @@ function BookingForm() {
 
   // --- resetForm (Unchanged) ---
   const resetForm = () => {
+    // (This function is exactly the same as before, no changes needed)
     setPhone('');
     setAttendees([{ ...defaultAttendee }]);
     setSelectedTierId(eventConfig.tiers[0].id);
@@ -164,7 +183,8 @@ function BookingForm() {
                   <input type="radio" name="ticketTier" value={tier.id} checked={selectedTierId === tier.id} onChange={(e) => setSelectedTierId(e.target.value)} />
                   <div>
                     <strong>{tier.name}</strong> - ₹{tier.price}
-                    <small>{tier.perks.join(', ')}</small>
+                    {/* Updated to show "per couple" text conditionally */}
+                    <small>{tier.id === 'couple' ? 'Total for 2 Guests. ' : ''}{tier.perks.join(', ')}</small>
                   </div>
                 </label>
               ))}
@@ -174,25 +194,26 @@ function BookingForm() {
 
             <hr className={styles.divider} />
             
-            {/* --- REPLACEMENT JSX BLOCK FROM STEP 5 --- */}
+            {/* This map block is unchanged, the useEffect hook now controls its data */}
             {attendees.map((attendee, index) => (
-              <div key={index} className={styles.attendeeInputGroup}> {/* We will style this class later */}
+              <div key={index} className={styles.attendeeInputGroup}> 
                 
                 <div className={styles.attendeeInput}>
                   <input 
                     type="text" 
-                    placeholder={`Attendee ${index + 1} Name (as per ID)`} 
+                    // Conditionally change placeholder text
+                    placeholder={selectedTierId === 'couple' ? `Attendee ${index + 1} Name` : `Attendee ${index + 1} Name (as per ID)`}
                     value={attendee.name} 
                     onChange={(e) => handleAttendeeFieldChange(index, 'name', e.target.value)} 
                     required 
                   />
-                  {attendees.length > 1 && (
+                  {/* --- NEW LOGIC: Hide "Remove" button if it's the couple pass OR the last ticket --- */}
+                  {attendees.length > 1 && selectedTierId !== 'couple' && (
                     <button type="button" onClick={() => removeAttendee(index)} className={styles.removeBtn}>Remove</button>
                   )}
                 </div>
   
-                {/* --- NEW GENDER RADIOS --- */}
-                <div className={styles.genderSelector}> {/* We will style this class later */}
+                <div className={styles.genderSelector}> 
                   <label>
                     <input 
                       type="radio" 
@@ -215,14 +236,17 @@ function BookingForm() {
   
               </div>
             ))}
-            {/* --- END OF REPLACEMENT BLOCK --- */}
             
-            <button type="button" onClick={addAttendee} className={styles.addBtn}>+ Add Another Attendee</button>
+            {/* --- NEW LOGIC: Only show "Add" button if NOT a couple pass --- */}
+            {selectedTierId !== 'couple' && (
+              <button type="button" onClick={addAttendee} className={styles.addBtn}>+ Add Another Attendee</button>
+            )}
+
             <hr className={styles.divider} />
 
             <input 
               type="text" 
-              placeholder="Apply Coupon Code (Use - EARLYBIRD Valid till 15/09)" 
+              placeholder="Apply Coupon Code (Use - EARLYBIRD)" 
               value={couponCode} 
               onChange={(e) => setCouponCode(e.target.value)} 
             />
@@ -252,13 +276,17 @@ function BookingForm() {
 
   // RENDER STEP 2: PAYMENT FORM (Unchanged)
   if (step === 2) {
+    // (This entire block is exactly the same as before, no changes needed)
+    // It correctly uses the 'finalTotal' variable we already calculated
     return (
       <div className={eventPageStyles.pageContainer}>
         <div className={eventPageStyles.eventCard}>
           <h1 className={eventPageStyles.title}>Complete Payment</h1>
           
           <div className={styles.paymentInstructions}>
-            <p>Please pay <strong>₹{finalTotal}</strong> for <strong>{attendees.length} ticket(s)</strong></p>
+            <p>Please pay <strong>₹{finalTotal}</strong> for 
+               <strong>{selectedTierId === 'couple' ? ' 1 Couple Pass' : ` ${attendees.length} ticket(s)`}</strong>
+            </p>
             {calculatedDiscount > 0 && (
               <p className={styles.couponSuccess}> (Total ₹{baseTotal} - ₹{calculatedDiscount} discount applied)</p>
             )}
@@ -284,13 +312,16 @@ function BookingForm() {
   
   // RENDER STEP 3: SUCCESS PAGE (Unchanged)
   if (step === 3) {
+     // (This entire block is exactly the same as before, no changes needed)
      return (
       <div className={eventPageStyles.pageContainer}>
         <div className={eventPageStyles.eventCard}>
           <div className={styles.successContainer}>
             <h1 className={eventPageStyles.title}>Booking Received!</h1>
             <p className={styles.successText}>
-              Your submission for <strong>{attendees.length} ticket(s)</strong> is confirmed and is now under review.
+              Your submission for 
+              <strong>{selectedTierId === 'couple' ? ' 1 Couple Pass' : ` ${attendees.length} ticket(s)`}</strong>
+              &nbsp;is confirmed and is now under review.
               Passes will be generated upon approval (typically within 20-30min).
             </p>
             <p className={styles.successText}>
