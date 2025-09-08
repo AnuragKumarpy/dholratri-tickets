@@ -6,7 +6,7 @@ import eventPageStyles from './EventPage.module.css';
 import eventConfig from '../eventConfig.json'; 
 import paymentQrCode from '../assets/payment-qr.png'; 
 
-const defaultAttendee = { name: '' };
+const defaultAttendee = { name: '', gender: 'male' };
 
 function BookingForm() {
   // === All component state (unchanged) ===
@@ -24,9 +24,9 @@ function BookingForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   // --- Attendee Functions (Unchanged) ---
-  const handleAttendeeChange = (index, event) => {
+  const handleAttendeeFieldChange = (index, field, value) => {
     const newAttendees = [...attendees];
-    newAttendees[index].name = event.target.value;
+    newAttendees[index][field] = value;
     setAttendees(newAttendees);
   };
   const addAttendee = () => {
@@ -76,14 +76,14 @@ function BookingForm() {
       return;
     }
     setIsLoading(true);
-    const attendeeNames = attendees.map(a => a.name);
+    const attendeeObjects = attendees.map(a => ({ name: a.name.trim(), gender: a.gender }));
     try {
       const response = await fetch('/api/purchase/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: phone.trim(),
-          attendees: attendeeNames,
+          attendees: attendeeObjects,
           ticketType: selectedTier.id,
           wantsMarketingUpdates: agreeWhatsapp,
           appliedCoupon: isCouponCodeCorrect && isDateValid ? 'earlybird' : 'none', // Only log valid coupons
@@ -167,13 +167,45 @@ function BookingForm() {
 
             <hr className={styles.divider} />
             {attendees.map((attendee, index) => (
-              <div key={index} className={styles.attendeeInput}>
-                <input type="text" placeholder={`Attendee ${index + 1} Name (as per ID)`} value={attendee.name} onChange={(e) => handleAttendeeChange(index, e)} required />
-                {attendees.length > 1 && (
-                  <button type="button" onClick={() => removeAttendee(index)} className={styles.removeBtn}>Remove</button>
-                )}
-              </div>
-            ))}
+          <div key={index} className={styles.attendeeInputGroup}> {/* We will style this class later */}
+          
+            <div className={styles.attendeeInput}>
+              <input 
+                type="text" 
+                placeholder={`Attendee ${index + 1} Name (as per ID)`} 
+                value={attendee.name} 
+                {/* This now correctly points to your new function */}
+                onChange={(e) => handleAttendeeFieldChange(index, 'name', e.target.value)} 
+                required 
+              />
+              {attendees.length > 1 && (
+                <button type="button" onClick={() => removeAttendee(index)} className={styles.removeBtn}>Remove</button>
+              )}
+            </div>
+          
+            {/* --- NEW GENDER RADIOS --- */}
+            <div className={styles.genderSelector}> {/* We will style this class later */}
+              <label>
+                <input 
+                  type="radio" 
+                  name={`gender-${index}`} 
+                  value="male" 
+                  checked={attendee.gender === 'male'} 
+                  onChange={(e) => handleAttendeeFieldChange(index, 'gender', e.target.value)}
+                /> Male
+              </label>
+              <label>
+                <input 
+                  type="radio" 
+                  name={`gender-${index}`} 
+                  value="female" 
+                  checked={attendee.gender === 'female'} 
+                  onChange={(e) => handleAttendeeFieldChange(index, 'gender', e.target.value)}
+                /> Female
+              </label>
+            </div>
+
+        </div>
             <button type="button" onClick={addAttendee} className={styles.addBtn}>+ Add Another Attendee</button>
             <hr className={styles.divider} />
 
