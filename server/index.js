@@ -203,8 +203,16 @@ async function logActivity(userId, action, details) {
 // --- Input Validation Schemas ---
 const purchaseSchema = Joi.object({
   phone: Joi.string().pattern(/^\d{10}$/).required(),
-  attendees: Joi.array().items(Joi.string().min(1).max(100)).min(1).required(),
-  ticketType: Joi.string().valid('general', 'vip', 'premium').required(),
+  attendees: Joi.array().items(
+    Joi.alternatives().try(
+      Joi.string().min(1).max(100), // <-- Keeps validating the OLD format
+      Joi.object({                  // <-- ADDS validation for the NEW format
+        name: Joi.string().min(1).max(100).required(),
+        gender: Joi.string().valid('male', 'female').required()
+      })
+    )
+  ).min(1).required(),
+  ticketType: Joi.string().required(), // <-- Allows 'couple' and any other dynamic tiers
 });
 
 const settingsSchema = Joi.object({
@@ -281,15 +289,21 @@ app.post('/api/purchase/initiate', sensitiveRouteLimiter, makeRequestWritable, m
     };
     const purchaseResult = await db.collection('purchases').insertOne(newPurchase);
     const purchaseId = purchaseResult.insertedId;
-    const ticketDocs = attendees.map((name) => ({
-      purchaseId,
-      attendeeName: name,
-      ticketType,
-      phone: cleanPhone,
-      status: 'payment-pending',
-      checkedIn: false,
-      qrCodeDataUrl: null,
-    }));
+    const ticketDocs = attendees.map((attendee) => {
+      // Check if the item is our new object or the old string
+      const isNewFormat = typeof attendee === 'object' && attendee !== null && attendee.gender;
+    
+      return {
+        purchaseId,
+        attendeeName: isNewFormat ? attendee.name : attendee, // Get name from object OR use the old string
+        gender: isNewFormat ? attendee.gender : null,     // Save gender if we have it, otherwise save null
+        ticketType,
+        phone: cleanPhone,
+        status: 'payment-pending',
+        checkedIn: false,
+        qrCodeDataUrl: null,
+      };
+    });
     await db.collection('tickets').insertMany(ticketDocs);
     res.status(201).json({ message: 'Purchase initiated. Please proceed to payment.', purchaseId });
   } catch (error) {
