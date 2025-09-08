@@ -6,6 +6,7 @@ import eventPageStyles from './EventPage.module.css';
 import eventConfig from '../eventConfig.json'; 
 import paymentQrCode from '../assets/payment-qr.png'; 
 
+// --- CHANGE FROM STEP 4 ---
 const defaultAttendee = { name: '', gender: 'male' };
 
 function BookingForm() {
@@ -23,12 +24,14 @@ function BookingForm() {
   const [purchaseId, setPurchaseId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- Attendee Functions (Unchanged) ---
+  // --- REPLACEMENT FUNCTION FROM STEP 4 ---
   const handleAttendeeFieldChange = (index, field, value) => {
     const newAttendees = [...attendees];
     newAttendees[index][field] = value;
     setAttendees(newAttendees);
   };
+  
+  // --- Attendee Functions (Unchanged) ---
   const addAttendee = () => {
     setAttendees([...attendees, { ...defaultAttendee }]);
   };
@@ -37,7 +40,7 @@ function BookingForm() {
     setAttendees(newAttendees);
   };
 
-  // --- !! UPDATED PRICE CALCULATION LOGIC !! ---
+  // --- !! PRICE CALCULATION LOGIC (Unchanged) !! ---
   const selectedTier = eventConfig.tiers.find(t => t.id === selectedTierId);
   const baseTotal = selectedTier.price * attendees.length;
   
@@ -68,7 +71,7 @@ function BookingForm() {
   
   const finalTotal = baseTotal - calculatedDiscount; // This is our new total
 
-  // --- FORM SUBMISSION LOGIC (Unchanged) ---
+  // --- FORM SUBMISSION LOGIC (CHANGES FROM STEP 6) ---
   const handleStep1Submit = async (event) => {
     event.preventDefault();
     if (!agreeTnc) {
@@ -76,14 +79,18 @@ function BookingForm() {
       return;
     }
     setIsLoading(true);
+    
+    // --- CHANGE FROM STEP 6 ---
     const attendeeObjects = attendees.map(a => ({ name: a.name.trim(), gender: a.gender }));
+    
     try {
       const response = await fetch('/api/purchase/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: phone.trim(),
-          attendees: attendeeObjects,
+          // --- CHANGE FROM STEP 6 ---
+          attendees: attendeeObjects, 
           ticketType: selectedTier.id,
           wantsMarketingUpdates: agreeWhatsapp,
           appliedCoupon: isCouponCodeCorrect && isDateValid ? 'earlybird' : 'none', // Only log valid coupons
@@ -141,7 +148,7 @@ function BookingForm() {
     setCouponCode('');
   };
 
-  // --- RENDER LOGIC (All unchanged, it just uses the new variables) ---
+  // --- RENDER LOGIC ---
 
   // RENDER STEP 1: INFO FORM
   if (step === 1) {
@@ -166,46 +173,51 @@ function BookingForm() {
             <input type="tel" placeholder="Phone / WhatsApp Number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
 
             <hr className={styles.divider} />
+            
+            {/* --- REPLACEMENT JSX BLOCK FROM STEP 5 --- */}
             {attendees.map((attendee, index) => (
-          <div key={index} className={styles.attendeeInputGroup}> {/* We will style this class later */}
-          
-            <div className={styles.attendeeInput}>
-              <input 
-                type="text" 
-                placeholder={`Attendee ${index + 1} Name (as per ID)`} 
-                value={attendee.name} 
-                {/* This now correctly points to your new function */}
-                onChange={(e) => handleAttendeeFieldChange(index, 'name', e.target.value)} 
-                required 
-              />
-              {attendees.length > 1 && (
-                <button type="button" onClick={() => removeAttendee(index)} className={styles.removeBtn}>Remove</button>
-              )}
-            </div>
-          
-            {/* --- NEW GENDER RADIOS --- */}
-            <div className={styles.genderSelector}> {/* We will style this class later */}
-              <label>
-                <input 
-                  type="radio" 
-                  name={`gender-${index}`} 
-                  value="male" 
-                  checked={attendee.gender === 'male'} 
-                  onChange={(e) => handleAttendeeFieldChange(index, 'gender', e.target.value)}
-                /> Male
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  name={`gender-${index}`} 
-                  value="female" 
-                  checked={attendee.gender === 'female'} 
-                  onChange={(e) => handleAttendeeFieldChange(index, 'gender', e.target.value)}
-                /> Female
-              </label>
-            </div>
-
-        </div>
+              <div key={index} className={styles.attendeeInputGroup}> {/* We will style this class later */}
+                
+                <div className={styles.attendeeInput}>
+                  <input 
+                    type="text" 
+                    placeholder={`Attendee ${index + 1} Name (as per ID)`} 
+                    value={attendee.name} 
+                    {/* This now correctly points to your new function */}
+                    onChange={(e) => handleAttendeeFieldChange(index, 'name', e.target.value)} 
+                    required 
+                  />
+                  {attendees.length > 1 && (
+                    <button type="button" onClick={() => removeAttendee(index)} className={styles.removeBtn}>Remove</button>
+                  )}
+                </div>
+  
+                {/* --- NEW GENDER RADIOS --- */}
+                <div className={styles.genderSelector}> {/* We will style this class later */}
+                  <label>
+                    <input 
+                      type="radio" 
+                      name={`gender-${index}`} 
+                      value="male" 
+                      checked={attendee.gender === 'male'} 
+                      onChange={(e) => handleAttendeeFieldChange(index, 'gender', e.target.value)}
+                    /> Male
+                  </label>
+                  <label>
+                    <input 
+                      type="radio" 
+                      name={`gender-${index}`} 
+                      value="female" 
+                      checked={attendee.gender === 'female'} 
+                      onChange={(e) => handleAttendeeFieldChange(index, 'gender', e.target.value)}
+                    /> Female
+                  </label>
+                </div>
+  
+              </div>
+            ))}
+            {/* --- END OF REPLACEMENT BLOCK --- */}
+            
             <button type="button" onClick={addAttendee} className={styles.addBtn}>+ Add Another Attendee</button>
             <hr className={styles.divider} />
 
@@ -224,7 +236,6 @@ function BookingForm() {
             <label className={styles.checkboxLabel}>
               <input type="checkbox" checked={agreeTnc} onChange={(e) => setAgreeTnc(e.target.checked)} />
               I agree to the&nbsp;
-              {/* THIS IS THE CHANGE: */}
               <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">
                 <strong>Terms & Conditions</strong>
               </Link>
@@ -240,7 +251,7 @@ function BookingForm() {
     );
   }
 
-  // RENDER STEP 2: PAYMENT FORM
+  // RENDER STEP 2: PAYMENT FORM (Unchanged)
   if (step === 2) {
     return (
       <div className={eventPageStyles.pageContainer}>
@@ -272,7 +283,7 @@ function BookingForm() {
     );
   }
   
-  // RENDER STEP 3: SUCCESS PAGE
+  // RENDER STEP 3: SUCCESS PAGE (Unchanged)
   if (step === 3) {
      return (
       <div className={eventPageStyles.pageContainer}>
@@ -286,8 +297,7 @@ function BookingForm() {
             <p className={styles.successText}>
               You can check the status of your booking at any time using your phone number.
             </p>
-                        <p>For any Query Contact +918210463197</p>
-
+            <p>For any Query Contact +918210463197</p>
             
             <div className={styles.successActions}>
               <Link to="/status" className={eventPageStyles.bookButton}>
