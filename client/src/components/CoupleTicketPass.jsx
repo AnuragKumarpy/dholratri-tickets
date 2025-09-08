@@ -14,7 +14,7 @@ function CoupleTicketPass({ tickets }) {
   const nameB = `${ticketB.gender === 'male' ? 'Mr. ' : ticketB.gender === 'female' ? 'Miss. ' : ''}${ticketB.attendeeName}`;
 
   return (
-    <div className={styles.ticketPass}>
+    <div className={`${styles.ticketPass} ${styles.couplePass}`}>
       {/* Main Info Section */}
       <div className={styles.mainInfo}>
         <div className={styles.header}>
