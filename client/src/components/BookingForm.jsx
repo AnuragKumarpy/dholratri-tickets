@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'; // <-- IMPORT useEffect
+import { useState, useEffect } from 'react'; // useEffect is already imported
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import styles from './BookingForm.module.css';
@@ -22,12 +22,21 @@ function BookingForm() {
   const [purchaseId, setPurchaseId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- NEW useEffect HOOK TO OVERRIDE ATTENDEE COUNT ---
+  // --- UPDATED useEffect HOOK TO HANDLE ALL GROUP PASSES ---
   useEffect(() => {
     if (selectedTierId === 'couple') {
       // If "Couple Pass" is selected, force exactly two attendees
       setAttendees([
         { ...defaultAttendee }, 
+        { ...defaultAttendee }
+      ]);
+    } else if (selectedTierId === 'groupof5') {
+      // NEW: If "Group of 5" is selected, force exactly five attendees
+      setAttendees([
+        { ...defaultAttendee }, 
+        { ...defaultAttendee },
+        { ...defaultAttendee },
+        { ...defaultAttendee },
         { ...defaultAttendee }
       ]);
     } else {
@@ -43,7 +52,7 @@ function BookingForm() {
     setAttendees(newAttendees);
   };
   
-  // --- Attendee Functions (Unchanged, but our UI will now hide them) ---
+  // --- Attendee Functions (Unchanged) ---
   const addAttendee = () => {
     setAttendees([...attendees, { ...defaultAttendee }]);
   };
@@ -55,10 +64,10 @@ function BookingForm() {
   // --- !! UPDATED PRICE CALCULATION LOGIC !! ---
   const selectedTier = eventConfig.tiers.find(t => t.id === selectedTierId);
   
-  // NEW CONDITIONAL LOGIC FOR PRICE
+  // UPDATED CONDITIONAL LOGIC FOR PRICE
   let baseTotal;
-  if (selectedTier.id === 'couple') {
-    // For couple pass, the price is the total, not per-person
+  if (selectedTier.id === 'couple' || selectedTier.id === 'groupof5') {
+    // For couple OR group pass, the price is the total, not per-person
     baseTotal = selectedTier.price;
   } else {
     // For all other passes, use the original logic
@@ -73,11 +82,14 @@ function BookingForm() {
   const isCouponCodeCorrect = couponCode.trim().toLowerCase() === 'earlybird';
   const isDateValid = currentDate < expiryDate;
 
+  // UPDATED COUPON LOGIC
   if (isCouponCodeCorrect && isDateValid) {
-    // Logic Changed: For couple pass, discount is flat. For others, per-ticket.
     if (selectedTier.id === 'couple') {
       calculatedDiscount = 200; // Example: Flat ₹200 off for a couple pass
       couponDisplayMessage = `Congrats! "EarlyBird" saved your couple pass ₹${calculatedDiscount}!`;
+    } else if (selectedTier.id === 'groupof5') {
+      calculatedDiscount = 500; // Example: Flat ₹500 off for a group pass
+      couponDisplayMessage = `Congrats! "EarlyBird" saved your group pass ₹${calculatedDiscount}!`;
     } else {
       calculatedDiscount = attendees.length * 100; // Original: ₹100 off per ticket
       couponDisplayMessage = `Congrats! "EarlyBird" saved you ₹${calculatedDiscount}!`;
@@ -88,9 +100,9 @@ function BookingForm() {
     couponDisplayMessage = "Invalid coupon code.";
   }
   
-  const finalTotal = baseTotal - calculatedDiscount; // This is our new total
+  const finalTotal = baseTotal - calculatedDiscount;
 
-  // --- FORM SUBMISSION LOGIC (Unchanged from our last update) ---
+  // --- FORM SUBMISSION LOGIC (Unchanged) ---
   const handleStep1Submit = async (event) => {
     event.preventDefault();
     if (!agreeTnc) {
@@ -129,7 +141,6 @@ function BookingForm() {
 
   // --- HandleStep2Submit (Unchanged) ---
   const handleStep2Submit = async (event) => {
-    // (This function is exactly the same as before, no changes needed)
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
@@ -153,7 +164,6 @@ function BookingForm() {
 
   // --- resetForm (Unchanged) ---
   const resetForm = () => {
-    // (This function is exactly the same as before, no changes needed)
     setPhone('');
     setAttendees([{ ...defaultAttendee }]);
     setSelectedTierId(eventConfig.tiers[0].id);
@@ -171,6 +181,7 @@ function BookingForm() {
 
   // RENDER STEP 1: INFO FORM
   if (step === 1) {
+    const isGroupPass = selectedTierId === 'couple' || selectedTierId === 'groupof5';
     return (
       <div className={eventPageStyles.pageContainer}>
         <div className={eventPageStyles.eventCard}>
@@ -183,8 +194,11 @@ function BookingForm() {
                   <input type="radio" name="ticketTier" value={tier.id} checked={selectedTierId === tier.id} onChange={(e) => setSelectedTierId(e.target.value)} />
                   <div>
                     <strong>{tier.name}</strong> - ₹{tier.price}
-                    {/* Updated to show "per couple" text conditionally */}
-                    <small>{tier.id === 'couple' ? 'Total for 2 Guests. ' : ''}{tier.perks.join(', ')}</small>
+                    {/* UPDATED: Descriptive text for all group passes */}
+                    <small>
+                      {tier.id === 'couple' ? 'Total for 2 Guests. ' : tier.id === 'groupof5' ? 'Total for 5 Guests. ' : ''}
+                      {tier.perks.join(', ')}
+                    </small>
                   </div>
                 </label>
               ))}
@@ -194,21 +208,18 @@ function BookingForm() {
 
             <hr className={styles.divider} />
             
-            {/* This map block is unchanged, the useEffect hook now controls its data */}
             {attendees.map((attendee, index) => (
               <div key={index} className={styles.attendeeInputGroup}> 
-                
                 <div className={styles.attendeeInput}>
                   <input 
                     type="text" 
-                    // Conditionally change placeholder text
-                    placeholder={selectedTierId === 'couple' ? `Attendee ${index + 1} Name` : `Attendee ${index + 1} Name (as per ID)`}
+                    placeholder={isGroupPass ? `Attendee ${index + 1} Name` : `Attendee ${index + 1} Name (as per ID)`}
                     value={attendee.name} 
                     onChange={(e) => handleAttendeeFieldChange(index, 'name', e.target.value)} 
                     required 
                   />
-                  {/* --- NEW LOGIC: Hide "Remove" button if it's the couple pass OR the last ticket --- */}
-                  {attendees.length > 1 && selectedTierId !== 'couple' && (
+                  {/* UPDATED: Hide "Remove" button for ALL group passes */}
+                  {attendees.length > 1 && !isGroupPass && (
                     <button type="button" onClick={() => removeAttendee(index)} className={styles.removeBtn}>Remove</button>
                   )}
                 </div>
@@ -233,12 +244,11 @@ function BookingForm() {
                     /> Female
                   </label>
                 </div>
-  
               </div>
             ))}
             
-            {/* --- NEW LOGIC: Only show "Add" button if NOT a couple pass --- */}
-            {selectedTierId !== 'couple' && (
+            {/* UPDATED: Only show "Add" button if NOT a group pass */}
+            {!isGroupPass && (
               <button type="button" onClick={addAttendee} className={styles.addBtn}>+ Add Another Attendee</button>
             )}
 
@@ -274,19 +284,23 @@ function BookingForm() {
     );
   }
 
-  // RENDER STEP 2: PAYMENT FORM (Unchanged)
+  // --- HELPER FUNCTION FOR RENDER STEPS 2 & 3 ---
+  const getTicketDescription = () => {
+    if (selectedTierId === 'couple') return '1 Couple Pass';
+    if (selectedTierId === 'groupof5') return '1 Group of 5 Pass';
+    return `${attendees.length} ticket(s)`;
+  };
+
+  // RENDER STEP 2: PAYMENT FORM
   if (step === 2) {
-    // (This entire block is exactly the same as before, no changes needed)
-    // It correctly uses the 'finalTotal' variable we already calculated
     return (
       <div className={eventPageStyles.pageContainer}>
         <div className={eventPageStyles.eventCard}>
           <h1 className={eventPageStyles.title}>Complete Payment</h1>
           
           <div className={styles.paymentInstructions}>
-            <p>Please pay <strong>₹{finalTotal}</strong> for 
-               <strong>{selectedTierId === 'couple' ? ' 1 Couple Pass' : ` ${attendees.length} ticket(s)`}</strong>
-            </p>
+             {/* UPDATED: Text in this block is now dynamic */}
+            <p>Please pay <strong>₹{finalTotal}</strong> for <strong>{getTicketDescription()}</strong></p>
             {calculatedDiscount > 0 && (
               <p className={styles.couponSuccess}> (Total ₹{baseTotal} - ₹{calculatedDiscount} discount applied)</p>
             )}
@@ -310,17 +324,16 @@ function BookingForm() {
     );
   }
   
-  // RENDER STEP 3: SUCCESS PAGE (Unchanged)
+  // RENDER STEP 3: SUCCESS PAGE
   if (step === 3) {
-     // (This entire block is exactly the same as before, no changes needed)
      return (
       <div className={eventPageStyles.pageContainer}>
         <div className={eventPageStyles.eventCard}>
           <div className={styles.successContainer}>
             <h1 className={eventPageStyles.title}>Booking Received!</h1>
             <p className={styles.successText}>
-              Your submission for 
-              <strong>{selectedTierId === 'couple' ? ' 1 Couple Pass' : ` ${attendees.length} ticket(s)`}</strong>
+              {/* UPDATED: Text in this block is now dynamic */}
+              Your submission for <strong>{getTicketDescription()}</strong>
               &nbsp;is confirmed and is now under review.
               Passes will be generated upon approval (typically within 20-30min).
             </p>
