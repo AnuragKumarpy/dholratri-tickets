@@ -61,9 +61,11 @@ function StatusPage() {
   };
 
   // --- FINAL ROBUST GROUPING LOGIC ---
-  const approvedTickets = tickets.filter((t) => t.status === 'approved');
-  const pendingTickets = tickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
-  const rejectedTickets = tickets.filter((t) => t.status === 'rejected');
+
+  // THIS IS THE FIX: We add `t &&` to safely check that the ticket object exists before accessing its properties.
+  const approvedTickets = tickets.filter((t) => t && t.status === 'approved');
+  const pendingTickets = tickets.filter((t) => t && (t.status === 'pending-approval' || t.status === 'payment-pending'));
+  const rejectedTickets = tickets.filter((t) => t && t.status === 'rejected');
 
   const soloTicketsList = approvedTickets.filter(t => t.ticketType !== 'couple' && t.ticketType !== 'groupof5');
   const coupleTicketsList = approvedTickets.filter(t => t.ticketType === 'couple');
@@ -160,7 +162,6 @@ function StatusPage() {
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
                 
-                {/* 1. RENDER ALL VALID COUPLE PASSES (AS GROUPS) */}
                 {validCouplePasses.map((ticketGroup, index) => (
                   <motion.div
                     key={ticketGroup[0].purchaseId} 
@@ -173,7 +174,6 @@ function StatusPage() {
                   </motion.div>
                 ))}
 
-                {/* 2. RENDER ALL VALID GROUP PASSES */}
                  {validGroup5Passes.map((ticketGroup, index) => (
                   <motion.div
                     key={ticketGroup[0].purchaseId} 
@@ -186,10 +186,7 @@ function StatusPage() {
                   </motion.div>
                 ))}
 
-                {/* --- 3. RENDER ALL FINAL SOLO PASSES (WITH THE FIX) --- */}
-                {finalSoloTicketsToRender
-                  .filter(Boolean) // <-- THIS IS THE FIX. It strips any null/undefined values.
-                  .map((ticket, index) => (
+                {finalSoloTicketsToRender.map((ticket, index) => (
                   <motion.div
                     key={ticket._id} 
                     initial={{ opacity: 0, y: 50 }}
@@ -211,3 +208,4 @@ function StatusPage() {
 }
 
 export default StatusPage;
+
