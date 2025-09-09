@@ -232,3 +232,43 @@
     color: #333 !important;
   }
 }
+/* --- NEW: Download Button --- */
+.downloadButtonContainer {
+  /* This will make the button part of the grid, spanning both columns */
+  grid-column: 1 / -1; 
+  margin-top: var(--spacing-md);
+}
+
+.downloadButton {
+  width: 100%;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  font-weight: 700;
+  font-family: var(--font-body);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.downloadButton:hover {
+  opacity: 0.85;
+  transform: scale(1.02);
+}
+
+.downloadButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* --- Ensure button is hidden for manual printing --- */
+@media print {
+  .downloadButtonContainer {
+    display: none !important;
+  }
+}
+
+
