@@ -12,12 +12,12 @@ function EventPage() {
 
         {/* 1. Added the .illuminatedTitle class to the <h1> */}
         <h1 className={`${styles.title} ${styles.illuminatedTitle}`}>
-          DholRatri Dandiya Night 2025
+          DholRatri Dandiya Night 2025 
         </h1>
 
         {/* 2. Added the .typewriter class to the FIRST <p> tag */}
         <p className={styles.typewriter}>
-          Get ready to experience <br />an unforgettable night of music<br /> dance, and celebration! <br />Join us for the grand DholRatri Dandiya Night 2025.
+          Get ready to experience <br />an unforgettable night of music<br /> dance, and celebration! <br />Join us for the grand DholRatri Dandiya Night <br /> 26th Sep 2025 Veridian Suddhowala Dehradun.
         </p>
 
         {/* 3. The SECOND <p> tag just uses the normal .description class */}
