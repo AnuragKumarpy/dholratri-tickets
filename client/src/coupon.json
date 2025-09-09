@@ -1,0 +1,26 @@
+[
+  {
+    "code": "FOLLOWMAX",
+    "description": "Flat ₹200 off your total purchase!",
+    "type": "FLAT",
+    "value": 200,
+    "maxUses": 1,
+    "expiryDate": "2025-09-25T23:59:59"
+  },
+  {
+    "code": "SPECIAL10",
+    "description": "Get 10% off your booking.",
+    "type": "PERCENTAGE",
+    "value": 10,
+    "maxUses": 1,
+    "expiryDate": "2025-09-22T23:59:59"
+  },
+  {
+    "code": "EARLYBIRD",
+    "description": "Flat ₹100 off per ticket. A classic!",
+    "type": "FLAT_PER_TICKET",
+    "value": 100,
+    "maxUses": 100,
+    "expiryDate": "2025-09-16T00:00:00"
+  }
+]
