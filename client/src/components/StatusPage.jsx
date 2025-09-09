@@ -60,12 +60,15 @@ function StatusPage() {
     }
   };
 
-  // --- FINAL ROBUST GROUPING LOGIC ---
+  // --- DEFINITIVE CRASH-PROOF LOGIC ---
+  
+  // 1. Clean the raw API data immediately. This is the most important fix.
+  const cleanTickets = tickets.filter(Boolean); // Removes any null/undefined entries in the array
 
-  // THIS IS THE FIX: We add `t &&` to safely check that the ticket object exists before accessing its properties.
-  const approvedTickets = tickets.filter((t) => t && t.status === 'approved');
-  const pendingTickets = tickets.filter((t) => t && (t.status === 'pending-approval' || t.status === 'payment-pending'));
-  const rejectedTickets = tickets.filter((t) => t && t.status === 'rejected');
+  // 2. Now, create the status lists from the clean data.
+  const approvedTickets = cleanTickets.filter((t) => t.status === 'approved');
+  const pendingTickets = cleanTickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
+  const rejectedTickets = cleanTickets.filter((t) => t.status === 'rejected');
 
   const soloTicketsList = approvedTickets.filter(t => t.ticketType !== 'couple' && t.ticketType !== 'groupof5');
   const coupleTicketsList = approvedTickets.filter(t => t.ticketType === 'couple');
@@ -110,7 +113,7 @@ function StatusPage() {
   });
 
   const finalSoloTicketsToRender = [...soloTicketsList, ...orphanCoupleTickets, ...orphanGroup5Tickets];
-  // --- END OF NEW LOGIC ---
+  // --- END OF LOGIC ---
 
 
   return (
