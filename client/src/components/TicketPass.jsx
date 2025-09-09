@@ -1,3 +1,6 @@
+import { useRef, useState } from 'react';
+import { toPng } from 'html-to-image';
+import toast from 'react-hot-toast';
 import styles from './TicketPass.module.css';
 import eventConfig from '../eventConfig.json';
 import dholratriLogo from '../assets/dholratri-logo.png';
@@ -9,13 +12,43 @@ const TicketBorder = () => (
 );
 
 function TicketPass({ ticket }) {
-  // --- THIS IS THE FIX ---
-  // If the ticket data is missing, render nothing to prevent a crash.
+  const ticketRef = useRef(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  
   if (!ticket || !ticket.ticketType) {
     console.error("TicketPass received invalid ticket data:", ticket);
     return null;
   }
-  // --- END OF FIX ---
+
+  const handleDownload = async () => {
+    if (!ticketRef.current) return;
+    setIsDownloading(true);
+    toast.loading('Preparing your pass...');
+
+    try {
+      const dataUrl = await toPng(ticketRef.current, {
+        quality: 1.0,
+        pixelRatio: 3, // Higher resolution for crisp text/images
+        style: {
+          margin: '0' // Ensure no extra margin is captured
+        }
+      });
+      
+      toast.dismiss();
+      const link = document.createElement('a');
+      link.download = `DholRatri-Pass-${ticket.attendeeName.replace(/\s/g, '_')}-${ticket._id.slice(-6)}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Download started!');
+
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Could not download ticket.');
+      console.error('Download error:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const tierDetails = eventConfig.tiers.find(t => t.id === ticket.ticketType);
   const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
@@ -27,11 +60,10 @@ function TicketPass({ ticket }) {
     'groupof5': styles.groupPass
   };
   const dedicatedStyleClass = tierStyleMap[ticket.ticketType] || '';
-
-  const prefixedName = `${ticket.gender === 'male' ? 'Mr. ' : ticket.gender === 'female' ? 'Miss. ' : ''}${ticket.attendeeName}`;
+  const prefixedName = `${ticket.gender === 'male' ? 'Mr. ' : 'Miss. '}${ticket.attendeeName}`;
 
   return (
-    <div className={`${styles.ticketPass} ${dedicatedStyleClass}`}>
+    <div ref={ticketRef} className={`${styles.ticketPass} ${dedicatedStyleClass}`}>
       <TicketBorder />
       <div className={styles.mainInfo}>
         <img src={dholratriLogo} alt="DholRatri Logo" className={styles.brandLogo} />
@@ -40,26 +72,19 @@ function TicketPass({ ticket }) {
           <h2>{eventConfig.eventName}</h2>
         </div>
         <div className={styles.details}>
-          <div>
-            <strong>Ticket Type</strong>
-            <span style={{ textTransform: 'capitalize' }}>{tierName}</span>
+          <div><strong>Ticket Type</strong><span>{tierName}</span></div>
+          <div><strong>Date</strong><span>26th September</span></div>
+          <div><strong>Status</strong><span style={{color: 'var(--accent-color)'}}>{ticket.status}</span></div>
+          <div><strong>Time</strong><span>6:00 PM - 10:00 PM</span></div>
+          <div style={{ gridColumn: '1 / -1' }}><strong>Venue</strong><span>Veridian Resort, Dehradun</span></div>
+          
+          {/* New Download Button Container */}
+          <div className={styles.downloadButtonContainer}>
+             <button onClick={handleDownload} className={styles.downloadButton} disabled={isDownloading}>
+                {isDownloading ? 'Downloading...' : 'Download Pass'}
+             </button>
           </div>
-          <div>
-            <strong>Date</strong>
-            <span>26th September</span>
-          </div>
-          <div>
-            <strong>Status</strong>
-            <span style={{ textTransform: 'uppercase', color: 'var(--accent-color)' }}>{ticket.status}</span>
-          </div>
-           <div>
-            <strong>Time</strong>
-            <span>6:00 PM - 10:00 PM</span>
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}> 
-            <strong>Venue</strong>
-            <span>Veridian Resort, Suddhowala, Dehradun</span>
-          </div>
+
         </div>
         <div className={styles.attendeeInfo}>
           <h3>{prefixedName}</h3>
