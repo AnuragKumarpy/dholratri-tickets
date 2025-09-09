@@ -195,23 +195,26 @@
 /* --- DEDICATED TIER BACKGROUNDS --- */
 
 .generalPass {
-  /* White (this is the default, but this makes it explicit) */
+  /* White (explicitly set) */
   background-color: #FFFFFF;
 }
 
 .premiumPass {
   /* A very light, "silver-like" lavender-grey */
   background-color: #E6E8FA; 
-  /* For a flat metallic grey, use: #C0C0C0 */
 }
 
 .luxuryPass {
   /* A very light, "gold-like" cream (Cornsilk) */
   background-color: #FFF8DC; 
-  /* For a bright, flat gold, use: #FFD700 */
 }
 
 .couplePass {
-  /* A nice light pink (MistyRose) */
+  /* Light Pink (MistyRose) */
   background-color: #FFE4E1; 
+}
+
+.groupPass {
+  /* A nice light cyan */
+  background-color: #E0FFFF;
 }
