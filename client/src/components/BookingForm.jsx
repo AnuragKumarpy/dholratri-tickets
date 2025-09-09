@@ -85,10 +85,10 @@ function BookingForm() {
   // UPDATED COUPON LOGIC
   if (isCouponCodeCorrect && isDateValid) {
     if (selectedTier.id === 'couple') {
-      calculatedDiscount = 200; // Example: Flat ₹200 off for a couple pass
+      calculatedDiscount = 100; // Example: Flat ₹200 off for a couple pass
       couponDisplayMessage = `Congrats! "EarlyBird" saved your couple pass ₹${calculatedDiscount}!`;
     } else if (selectedTier.id === 'groupof5') {
-      calculatedDiscount = 500; // Example: Flat ₹500 off for a group pass
+      calculatedDiscount = 100; // Example: Flat ₹500 off for a group pass
       couponDisplayMessage = `Congrats! "EarlyBird" saved your group pass ₹${calculatedDiscount}!`;
     } else {
       calculatedDiscount = attendees.length * 100; // Original: ₹100 off per ticket
@@ -185,7 +185,7 @@ function BookingForm() {
     return (
       <div className={eventPageStyles.pageContainer}>
         <div className={eventPageStyles.eventCard}>
-          <h1 className={eventPageStyles.title}>Book Your Pass</h1>
+          <h1 className={eventPageStyles.title}>Book Your Pass(es)</h1>
           <form className={styles.formContainer} onSubmit={handleStep1Submit}>
             
             <div className={styles.tierContainer}>
