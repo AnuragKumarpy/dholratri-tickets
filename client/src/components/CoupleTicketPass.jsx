@@ -14,6 +14,7 @@ function CoupleTicketPass({ tickets }) {
   const tierDetails = eventConfig.tiers.find(t => t.id === ticketA.ticketType);
   const tierName = tierDetails ? tierDetails.name : ticketA.ticketType;
 
+  // We still create both prefixed names
   const nameA = `${ticketA.gender === 'male' ? 'Mr. ' : ticketA.gender === 'female' ? 'Miss. ' : ''}${ticketA.attendeeName}`;
   const nameB = `${ticketB.gender === 'male' ? 'Mr. ' : ticketB.gender === 'female' ? 'Miss. ' : ''}${ticketB.attendeeName}`;
 
@@ -30,7 +31,7 @@ function CoupleTicketPass({ tickets }) {
           <h2>{eventConfig.eventName}</h2>
         </div>
 
-        {/* --- UPDATED DETAILS GRID --- */}
+        {/* --- DETAILS GRID (Unchanged) --- */}
         <div className={styles.details}>
            <div>
             <strong>Ticket Type</strong>
@@ -53,15 +54,26 @@ function CoupleTicketPass({ tickets }) {
             <span>Veridian Resort, Suddhowala, Dehradun</span>
           </div>
         </div>
-        {/* --- END OF UPDATED GRID --- */}
 
+        {/* --- NEWLY UPDATED ATTENDEE BLOCK (As per your request) --- */}
         <div className={styles.attendeeInfo}>
-          <h3>{nameA} &amp; {nameB}</h3>
-          <p>Official Pass Holders</p>
+          <h3 style={{ lineHeight: 1.3 }}>{nameA}</h3>
+          <p style={{
+              margin: '0.25rem 0',
+              color: 'var(--accent-color)',
+              fontWeight: '700',
+              fontSize: '1rem',
+              fontFamily: 'var(--font-heading)'
+          }}>
+            coupled with
+          </p>
+          <h3 style={{ lineHeight: 1.3 }}>{nameB}</h3>
         </div>
+        {/* --- END OF UPDATE --- */}
+
       </div>
 
-      {/* --- QR Code Section (Two QRs) --- */}
+      {/* --- QR Code Section (Unchanged) --- */}
       <div className={styles.qrStub} style={{ gap: '1rem', justifyContent: 'center' }}>
         <div className={styles.qrCodeWrapper}>
            <img src={ticketA.qrCodeDataUrl} alt="QR Code 1" />
