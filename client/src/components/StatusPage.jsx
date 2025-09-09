@@ -6,8 +6,7 @@ import styles from './StatusPage.module.css';
 import formStyles from './BookingForm.module.css';
 import pageStyles from './EventPage.module.css';
 import TicketPass from './TicketPass.jsx';
-import CoupleTicketPass from './CoupleTicketPass.jsx'; 
-// We no longer import GroupTicketPass
+import CoupleTicketPass from './CoupleTicketPass.jsx';
 import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
@@ -16,10 +15,7 @@ function StatusPage() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePrint = () => {
-    window.print();
-    toast.success('Preparing your tickets...');
-  };
+  // The handlePrint function is no longer needed
 
   const lottieOptions = {
     loop: true,
@@ -60,19 +56,14 @@ function StatusPage() {
     }
   };
 
-  // --- SIMPLIFIED GROUPING LOGIC ---
-  
   const cleanTickets = tickets.filter(Boolean);
-
   const approvedTickets = cleanTickets.filter((t) => t.status === 'approved');
   const pendingTickets = cleanTickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
   const rejectedTickets = cleanTickets.filter((t) => t.status === 'rejected');
-
-  // 1. Separate couple tickets from all other tickets.
+  
   const nonCoupleTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
   const coupleTicketsList = approvedTickets.filter(t => t.ticketType === 'couple');
 
-  // 2. Group only the couple tickets by PurchaseID.
   const coupleTicketGroups = coupleTicketsList.reduce((acc, ticket) => {
     if (ticket && ticket.purchaseId) { 
       const purchaseId = ticket.purchaseId.toString();
@@ -82,7 +73,6 @@ function StatusPage() {
     return acc;
   }, {});
 
-  // 3. Partition the couple groups into valid pairs and orphans.
   const validCouplePasses = [];
   const orphanCoupleTickets = [];
   Object.values(coupleTicketGroups).forEach(group => {
@@ -93,10 +83,7 @@ function StatusPage() {
     }
   });
 
-  // 4. The final list of individual tickets now contains everything else.
   const finalIndividualTickets = [...nonCoupleTickets, ...orphanCoupleTickets];
-  // --- END OF LOGIC ---
-
 
   return (
     <div className={pageStyles.pageContainer}>
@@ -140,14 +127,11 @@ function StatusPage() {
           <>
             <div className={`${styles.passListHeader} print-hide`}>
               <h2 className={styles.statusTitle}>Your Official Pass(es)</h2>
-              <button onClick={handlePrint} className={styles.printButton}>
-                Print All Tickets
-              </button>
+              {/* The "Print All" button has been removed */}
             </div>
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
                 
-                {/* 1. Render combined couple passes */}
                 {validCouplePasses.map((ticketGroup, index) => (
                   <motion.div
                     key={ticketGroup[0].purchaseId} 
@@ -160,7 +144,6 @@ function StatusPage() {
                   </motion.div>
                 ))}
 
-                {/* 2. Render all other tickets (including groupof5) individually */}
                 {finalIndividualTickets.map((ticket, index) => (
                   <motion.div
                     key={ticket._id} 
