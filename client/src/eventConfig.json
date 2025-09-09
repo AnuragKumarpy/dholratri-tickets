@@ -5,27 +5,21 @@
   "tiers": [
     {
       "id": "general",
-      "name": "General Pass",
-      "price": 499,
-      "perks": ["Standard Entry", "Access to Garba Arena","Dandiya Sticks Pair","1 x Hand Ribbon"]
-    },
-    {
-      "id": "premium",
-      "name": "Premium Pass",
-      "price": 999,
-      "perks": ["All in General","Seating","Zone A Access", "1 Complimentary Drink"]
+      "name": " Solo Pass",
+      "price": 699,
+      "perks": ["Entry","Dandiya Sticks Pair","1 x Hand Ribbon","Complementary Water"]
     },
     {
       "id": "couple",
       "name": "Couple Pass",
-      "price": 2199, 
-      "perks": ["All in General & Premium", "Entry for Two", "Couple Zone Access","Decorated table"]
+      "price": 1299, 
+      "perks": ["Entry for Two", "All in Solo Pass"]
     },
     {
-      "id": "luxury",
-      "name": "Luxury Lounge",
-      "price": 2499,
-      "perks": ["All in General & Premium", "Dedicated Sofa Seating VIP Zone", "700/- Food & Drinks Coupon", "Can Request a song"]
-    }
+      "id": "groupof5",
+      "name": "Group of 5 Pass",
+      "price": 2999, 
+      "perks": ["Entry for 5 Guests", "All in Solo Pass"]
+    }    
   ]
 }
