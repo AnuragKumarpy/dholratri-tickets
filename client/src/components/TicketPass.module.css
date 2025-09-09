@@ -270,5 +270,10 @@
     display: none !important;
   }
 }
+/* --- NEW CLASS TO HIDE BUTTON DURING CAPTURE --- */
+.hideForCapture {
+  display: none !important;
+}
+
 
 
