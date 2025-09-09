@@ -14,9 +14,9 @@ const TicketBorder = () => (
 function CoupleTicketPass({ tickets }) {
   const ticketRef = useRef(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false); // <-- New state
 
   if (!tickets || tickets.length < 2 || !tickets[0] || !tickets[1]) {
-    console.error("CoupleTicketPass received invalid ticket data:", tickets);
     return null;
   }
 
@@ -25,27 +25,30 @@ function CoupleTicketPass({ tickets }) {
   const handleDownload = async () => {
     if (!ticketRef.current) return;
     setIsDownloading(true);
+    setIsCapturing(true); // <-- Hide the button
     toast.loading('Preparing your pass...');
-    try {
-      const dataUrl = await toPng(ticketRef.current, {
-        quality: 1.0,
-        pixelRatio: 3,
-        style: { margin: '0' }
-      });
-      
-      toast.dismiss();
-      const link = document.createElement('a');
-      link.download = `DholRatri-Couple-Pass-${ticketA._id.slice(-6)}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast.success('Download started!');
-    } catch (error) {
-      toast.dismiss();
-      toast.error('Could not download ticket.');
-      console.error('Download error:', error);
-    } finally {
-      setIsDownloading(false);
-    }
+    
+    setTimeout(async () => {
+      try {
+        const dataUrl = await toPng(ticketRef.current, {
+          quality: 1.0, pixelRatio: 3, style: { margin: '0' }
+        });
+        
+        toast.dismiss();
+        const link = document.createElement('a');
+        link.download = `DholRatri-Couple-Pass-${ticketA._id.slice(-6)}.png`;
+        link.href = dataUrl;
+        link.click();
+        toast.success('Download started!');
+      } catch (error) {
+        toast.dismiss();
+        toast.error('Could not download ticket.');
+        console.error('Download error:', error);
+      } finally {
+        setIsDownloading(false);
+        setIsCapturing(false); // <-- Show the button again
+      }
+    }, 100);
   };
 
   const tierDetails = eventConfig.tiers.find(t => t.id === ticketA.ticketType);
@@ -68,7 +71,8 @@ function CoupleTicketPass({ tickets }) {
            <div><strong>Admits</strong><span>Two (2) Guests</span></div>
            <div><strong>Time</strong><span>6:00 PM - 10:00 PM</span></div>
            <div style={{ gridColumn: '1 / -1' }}><strong>Venue</strong><span>Veridian Resort, Dehradun</span></div>
-           <div className={styles.downloadButtonContainer}>
+           
+           <div className={`${styles.downloadButtonContainer} ${isCapturing ? styles.hideForCapture : ''}`}>
              <button onClick={handleDownload} className={styles.downloadButton} disabled={isDownloading}>
                 {isDownloading ? 'Downloading...' : 'Download Pass'}
              </button>
