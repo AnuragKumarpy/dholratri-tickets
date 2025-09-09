@@ -52,8 +52,8 @@ const qrCodeStorage = new CloudinaryStorage({
 });
 
 // --- Multer Uploaders ---
-const uploadScreenshot = multer({ storage: screenshotStorage, limits: { fileSize: 1024 * 1024 } });
-const uploadPaymentQr = multer({ storage: qrCodeStorage, limits: { fileSize: 1024 * 1024 } });
+const uploadScreenshot = multer({ storage: screenshotStorage, limits: { fileSize: 3 * 1024 * 1024 } });
+const uploadPaymentQr = multer({ storage: qrCodeStorage, limits: { fileSize: 3 * 1024 * 1024 } });
 
 // --- Express App Setup ---
 const app = express();
