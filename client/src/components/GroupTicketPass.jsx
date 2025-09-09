@@ -2,45 +2,33 @@ import styles from './TicketPass.module.css';
 import eventConfig from '../eventConfig.json';
 import dholratriLogo from '../assets/dholratri-logo.png';
 
-// Reusable border component
 const TicketBorder = () => (
   <svg className={styles.ticketBorder} width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" fill="none" rx="16" ry="16" stroke="var(--accent-color)" strokeWidth="4" strokeDasharray="10 10" strokeDashoffset="0" />
   </svg>
 );
 
-function TicketPass({ ticket }) {
-  const tierDetails = eventConfig.tiers.find(t => t.id === ticket.ticketType);
-  const tierName = tierDetails ? tierDetails.name : ticket.ticketType;
-
-  // --- UPDATED DESIGN LOGIC ---
-  const tierStyleMap = {
-    'general': styles.generalPass,
-    'premium': styles.premiumPass,
-    'luxury': styles.luxuryPass,
-    'groupof5': styles.groupPass // <-- THIS IS THE NEWLY ADDED LINE
-  };
-  // Get the correct style class, or default to an empty string
-  const dedicatedStyleClass = tierStyleMap[ticket.ticketType] || '';
-  // --- END NEW LOGIC ---
-
-  // Prefixed name logic
-  const prefixedName = `${ticket.gender === 'male' ? 'Mr. ' : ticket.gender === 'female' ? 'Miss. ' : ''}${ticket.attendeeName}`;
+function GroupTicketPass({ tickets }) {
+  // --- THIS IS THE FIX ---
+  if (!tickets || tickets.length < 5 || !tickets[0]) {
+     console.error("GroupTicketPass received invalid ticket data:", tickets);
+     return null;
+  }
+  // --- END OF FIX ---
+  
+  const commonTicket = tickets[0];
+  const tierDetails = eventConfig.tiers.find(t => t.id === commonTicket.ticketType);
+  const tierName = tierDetails ? tierDetails.name : commonTicket.ticketType;
 
   return (
-    <div className={`${styles.ticketPass} ${dedicatedStyleClass}`}>
+    <div className={`${styles.ticketPass} ${styles.groupPass}`}>
       <TicketBorder />
-      
-      {/* --- Main Info Section (Left) --- */}
       <div className={styles.mainInfo}>
         <img src={dholratriLogo} alt="DholRatri Logo" className={styles.brandLogo} />
-        
         <div className={styles.header}>
           <span>{eventConfig.location} Event Pass</span>
           <h2>{eventConfig.eventName}</h2>
         </div>
-
-        {/* --- UPDATED DETAILS GRID --- */}
         <div className={styles.details}>
           <div>
             <strong>Ticket Type</strong>
@@ -51,36 +39,43 @@ function TicketPass({ ticket }) {
             <span>26th September</span>
           </div>
           <div>
-            <strong>Status</strong>
-            <span style={{ textTransform: 'uppercase', color: 'var(--accent-color)' }}>{ticket.status}</span>
+            <strong>Admits</strong>
+            <span>Five (5) Guests</span>
           </div>
            <div>
             <strong>Time</strong>
             <span>6:00 PM - 10:00 PM</span>
           </div>
-          <div style={{ gridColumn: '1 / -1' }}> 
+          <div style={{ gridColumn: '1 / -1' }}>
             <strong>Venue</strong>
             <span>Veridian Resort, Suddhowala, Dehradun</span>
           </div>
         </div>
-        {/* --- END OF UPDATED GRID --- */}
-
-        <div className={styles.attendeeInfo}>
-          <h3>{prefixedName}</h3>
-          <p>Official Pass Holder</p>
+        <div className={styles.attendeeInfo} style={{ marginTop: '1rem' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.9rem' }}>
+              {tickets.map(t => (
+                 <li key={t._id} style={{ marginBottom: '0.25rem' }}>
+                   <strong>›</strong> {`${t.gender === 'male' ? 'Mr. ' : 'Miss. '}${t.attendeeName}`}
+                 </li>
+              ))}
+            </ul>
         </div>
       </div>
-
-      {/* --- QR Code Section (Right) --- */}
-      <div className={styles.qrStub}>
-        <div className={styles.qrCodeWrapper}>
-           <img src={ticket.qrCodeDataUrl} alt="Your Ticket QR Code" />
-           <p>Present this pass at entry</p>
-           <span>ID: {ticket._id}</span>
-        </div>
+      <div className={styles.qrStub} style={{ gap: '1.5rem', justifyContent: 'flex-start', overflowY: 'auto', maxHeight: '350px' }}>
+         {tickets.map(ticket => {
+            const prefixedName = `${ticket.gender === 'male' ? 'Mr. ' : 'Miss. '}${ticket.attendeeName}`;
+            return (
+              <div key={ticket._id} className={styles.qrCodeWrapper} style={{flexShrink: 0}}>
+                <img src={ticket.qrCodeDataUrl} alt={`QR for ${prefixedName}`} />
+                <p>{prefixedName}</p>
+                <span>ID: {ticket._id}</span>
+              </div>
+            );
+        })}
       </div>
     </div>
   );
 }
 
-export default TicketPass;
+export default GroupTicketPass;
+
