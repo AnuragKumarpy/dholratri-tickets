@@ -7,6 +7,7 @@ import formStyles from './BookingForm.module.css';
 import pageStyles from './EventPage.module.css';
 import TicketPass from './TicketPass.jsx';
 import CoupleTicketPass from './CoupleTicketPass.jsx'; 
+import GroupTicketPass from './GroupTicketPass.jsx'; // <-- 1. IMPORT NEW GROUP COMPONENT
 import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
@@ -52,46 +53,66 @@ function StatusPage() {
         setMessage(data.message || 'Server error');
       }
     } catch (error) {
-      console.error('Status check failed:', error); // This log is in your console
+      console.error('Status check failed:', error); 
       setMessage('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- NEW ROBUST GROUPING LOGIC ---
+  // --- FINAL ROBUST GROUPING LOGIC ---
   const approvedTickets = tickets.filter((t) => t.status === 'approved');
   const pendingTickets = tickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
   const rejectedTickets = tickets.filter((t) => t.status === 'rejected');
 
-  const allSoloTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
-  const allCoupleTickets = approvedTickets.filter(t => t.ticketType === 'couple');
+  // 1. Separate all tickets into three main lists
+  const soloTicketsList = approvedTickets.filter(t => t.ticketType !== 'couple' && t.ticketType !== 'groupof5');
+  const coupleTicketsList = approvedTickets.filter(t => t.ticketType === 'couple');
+  const group5TicketsList = approvedTickets.filter(t => t.ticketType === 'groupof5');
 
-  // Group all couple tickets by purchaseId
-  const coupleTicketGroups = allCoupleTickets.reduce((acc, ticket) => {
-    // --- THIS IS THE FIX ---
-    // Safely check if ticket and purchaseId exist before trying to group
+  // 2. Group the Couple Tickets by PurchaseID
+  const coupleTicketGroups = coupleTicketsList.reduce((acc, ticket) => {
     if (ticket && ticket.purchaseId) { 
       const purchaseId = ticket.purchaseId.toString();
       if (!acc[purchaseId]) acc[purchaseId] = [];
       acc[purchaseId].push(ticket);
     }
-    // --- END OF FIX ---
     return acc;
   }, {});
 
-  const validCouplePasses = []; 
-  const orphanCoupleTickets = []; 
+  // 3. Group the Group-of-5 Tickets by PurchaseID
+  const group5TicketGroups = group5TicketsList.reduce((acc, ticket) => {
+    if (ticket && ticket.purchaseId) { 
+      const purchaseId = ticket.purchaseId.toString();
+      if (!acc[purchaseId]) acc[purchaseId] = [];
+      acc[purchaseId].push(ticket);
+    }
+    return acc;
+  }, {});
 
+  // 4. Partition the groups into valid/orphaned lists
+  const validCouplePasses = []; // Groups with exactly 2
+  const orphanCoupleTickets = [];
   Object.values(coupleTicketGroups).forEach(group => {
     if (group.length === 2) {
-      validCouplePasses.push(group); 
+      validCouplePasses.push(group); // This is a valid pair
     } else {
       orphanCoupleTickets.push(...group);
     }
   });
 
-  const finalSoloTicketsToRender = [...allSoloTickets, ...orphanCoupleTickets];
+  const validGroup5Passes = []; // Groups with exactly 5
+  const orphanGroup5Tickets = [];
+  Object.values(group5TicketGroups).forEach(group => {
+    if (group.length === 5) {
+      validGroup5Passes.push(group); // This is a valid group of 5
+    } else {
+      orphanGroup5Tickets.push(...group);
+    }
+  });
+
+  // 5. Create the final, safe list of all tickets to be rendered as solos
+  const finalSoloTicketsToRender = [...soloTicketsList, ...orphanCoupleTickets, ...orphanGroup5Tickets];
   // --- END OF NEW LOGIC ---
 
 
@@ -133,7 +154,7 @@ function StatusPage() {
           </div>
         )}
 
-        {(validCouplePasses.length > 0 || finalSoloTicketsToRender.length > 0) && (
+        {(validCouplePasses.length > 0 || validGroup5Passes.length > 0 || finalSoloTicketsToRender.length > 0) && (
           <>
             <div className={`${styles.passListHeader} print-hide`}>
               <h2 className={styles.statusTitle}>Your Official Pass(es)</h2>
@@ -157,13 +178,26 @@ function StatusPage() {
                   </motion.div>
                 ))}
 
-                {/* 2. RENDER ALL FINAL SOLO PASSES (Original Solos + Orphaned Couples) */}
+                {/* 2. RENDER ALL VALID GROUP PASSES */}
+                 {validGroup5Passes.map((ticketGroup, index) => (
+                  <motion.div
+                    key={ticketGroup[0].purchaseId} 
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length) * 0.2 }} 
+                    exit={{ opacity: 0 }}
+                  >
+                    <GroupTicketPass tickets={ticketGroup} /> 
+                  </motion.div>
+                ))}
+
+                {/* 3. RENDER ALL FINAL SOLO PASSES (Original Solos + All Orphans) */}
                 {finalSoloTicketsToRender.map((ticket, index) => (
                   <motion.div
                     key={ticket._id} 
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length) * 0.2 }} 
+                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length + validGroup5Passes.length) * 0.2 }} 
                     exit={{ opacity: 0 }}
                   >
                     <TicketPass ticket={ticket} /> 
