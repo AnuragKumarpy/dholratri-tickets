@@ -1,8 +1,8 @@
 import styles from './TicketPass.module.css';
 import eventConfig from '../eventConfig.json';
-import dholratriLogo from '../assets/dholratri-logo.png'; // 1. Import logo
+import dholratriLogo from '../assets/dholratri-logo.png'; 
 
-// 2. Reusable border component
+// Reusable border component
 const TicketBorder = () => (
   <svg className={styles.ticketBorder} width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" fill="none" rx="16" ry="16" stroke="var(--accent-color)" strokeWidth="4" strokeDasharray="10 10" strokeDashoffset="0" />
@@ -18,7 +18,6 @@ function CoupleTicketPass({ tickets }) {
   const nameB = `${ticketB.gender === 'male' ? 'Mr. ' : ticketB.gender === 'female' ? 'Miss. ' : ''}${ticketB.attendeeName}`;
 
   return (
-    // 3. JSX completely restructured
     <div className={`${styles.ticketPass} ${styles.couplePass}`}>
       <TicketBorder />
       
@@ -31,16 +30,30 @@ function CoupleTicketPass({ tickets }) {
           <h2>{eventConfig.eventName}</h2>
         </div>
 
+        {/* --- UPDATED DETAILS GRID --- */}
         <div className={styles.details}>
            <div>
             <strong>Ticket Type</strong>
             <span style={{ textTransform: 'capitalize' }}>{tierName}</span>
           </div>
+          <div>
+            <strong>Date</strong>
+            <span>26th September</span>
+          </div>
            <div>
             <strong>Admits</strong>
             <span>Two (2) Guests</span>
           </div>
+          <div>
+            <strong>Time</strong>
+            <span>6:00 PM - 10:00 PM</span>
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <strong>Venue</strong>
+            <span>Veridian Resort, Suddhowala, Dehradun</span>
+          </div>
         </div>
+        {/* --- END OF UPDATED GRID --- */}
 
         <div className={styles.attendeeInfo}>
           <h3>{nameA} &amp; {nameB}</h3>
