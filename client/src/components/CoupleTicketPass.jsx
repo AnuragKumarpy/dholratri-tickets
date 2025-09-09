@@ -1,3 +1,6 @@
+import { useRef, useState } from 'react';
+import { toPng } from 'html-to-image';
+import toast from 'react-hot-toast';
 import styles from './TicketPass.module.css';
 import eventConfig from '../eventConfig.json';
 import dholratriLogo from '../assets/dholratri-logo.png'; 
@@ -9,22 +12,49 @@ const TicketBorder = () => (
 );
 
 function CoupleTicketPass({ tickets }) {
-  // --- THIS IS THE FIX ---
+  const ticketRef = useRef(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
   if (!tickets || tickets.length < 2 || !tickets[0] || !tickets[1]) {
     console.error("CoupleTicketPass received invalid ticket data:", tickets);
     return null;
   }
-  // --- END OF FIX ---
 
-  const [ticketA, ticketB] = tickets;
+  const [ticketA] = tickets;
+
+  const handleDownload = async () => {
+    if (!ticketRef.current) return;
+    setIsDownloading(true);
+    toast.loading('Preparing your pass...');
+    try {
+      const dataUrl = await toPng(ticketRef.current, {
+        quality: 1.0,
+        pixelRatio: 3,
+        style: { margin: '0' }
+      });
+      
+      toast.dismiss();
+      const link = document.createElement('a');
+      link.download = `DholRatri-Couple-Pass-${ticketA._id.slice(-6)}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Download started!');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Could not download ticket.');
+      console.error('Download error:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const tierDetails = eventConfig.tiers.find(t => t.id === ticketA.ticketType);
   const tierName = tierDetails ? tierDetails.name : ticketA.ticketType;
-
-  const nameA = `${ticketA.gender === 'male' ? 'Mr. ' : ticketA.gender === 'female' ? 'Miss. ' : ''}${ticketA.attendeeName}`;
-  const nameB = `${ticketB.gender === 'male' ? 'Mr. ' : ticketB.gender === 'female' ? 'Miss. ' : ''}${ticketB.attendeeName}`;
+  const nameA = `${tickets[0].gender === 'male' ? 'Mr. ' : 'Miss. '}${tickets[0].attendeeName}`;
+  const nameB = `${tickets[1].gender === 'male' ? 'Mr. ' : 'Miss. '}${tickets[1].attendeeName}`;
 
   return (
-    <div className={`${styles.ticketPass} ${styles.couplePass}`}>
+    <div ref={ticketRef} className={`${styles.ticketPass} ${styles.couplePass}`}>
       <TicketBorder />
       <div className={styles.mainInfo}>
         <img src={dholratriLogo} alt="DholRatri Logo" className={styles.brandLogo} />
@@ -33,36 +63,20 @@ function CoupleTicketPass({ tickets }) {
           <h2>{eventConfig.eventName}</h2>
         </div>
         <div className={styles.details}>
-           <div>
-            <strong>Ticket Type</strong>
-            <span style={{ textTransform: 'capitalize' }}>{tierName}</span>
-          </div>
-          <div>
-            <strong>Date</strong>
-            <span>26th September</span>
-          </div>
-           <div>
-            <strong>Admits</strong>
-            <span>Two (2) Guests</span>
-          </div>
-          <div>
-            <strong>Time</strong>
-            <span>6:00 PM - 10:00 PM</span>
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <strong>Venue</strong>
-            <span>Veridian Resort, Suddhowala, Dehradun</span>
-          </div>
+           <div><strong>Ticket Type</strong><span>{tierName}</span></div>
+           <div><strong>Date</strong><span>26th September</span></div>
+           <div><strong>Admits</strong><span>Two (2) Guests</span></div>
+           <div><strong>Time</strong><span>6:00 PM - 10:00 PM</span></div>
+           <div style={{ gridColumn: '1 / -1' }}><strong>Venue</strong><span>Veridian Resort, Dehradun</span></div>
+           <div className={styles.downloadButtonContainer}>
+             <button onClick={handleDownload} className={styles.downloadButton} disabled={isDownloading}>
+                {isDownloading ? 'Downloading...' : 'Download Pass'}
+             </button>
+           </div>
         </div>
         <div className={styles.attendeeInfo}>
           <h3 style={{ lineHeight: 1.3 }}>{nameA}</h3>
-          <p style={{
-              margin: '0.25rem 0',
-              color: 'var(--accent-color)',
-              fontWeight: '700',
-              fontSize: '1rem',
-              fontFamily: 'var(--font-heading)'
-          }}>
+          <p style={{ margin: '0.25rem 0', color: 'var(--accent-color)', fontWeight: '700', fontSize: '1rem', fontFamily: 'var(--font-heading)'}}>
             coupled with
           </p>
           <h3 style={{ lineHeight: 1.3 }}>{nameB}</h3>
@@ -70,14 +84,14 @@ function CoupleTicketPass({ tickets }) {
       </div>
       <div className={styles.qrStub} style={{ gap: '1rem', justifyContent: 'center' }}>
         <div className={styles.qrCodeWrapper}>
-           <img src={ticketA.qrCodeDataUrl} alt="QR Code 1" />
+           <img src={tickets[0].qrCodeDataUrl} alt="QR Code 1" />
            <p>{nameA}</p>
-           <span>ID: {ticketA._id}</span>
+           <span>ID: {tickets[0]._id}</span>
         </div>
          <div className={styles.qrCodeWrapper}>
-           <img src={ticketB.qrCodeDataUrl} alt="QR Code 2" />
+           <img src={tickets[1].qrCodeDataUrl} alt="QR Code 2" />
            <p>{nameB}</p>
-           <span>ID: {ticketB._id}</span>
+           <span>ID: {tickets[1]._id}</span>
         </div>
       </div>
     </div>
