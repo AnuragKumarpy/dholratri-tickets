@@ -180,7 +180,6 @@
   margin: var(--spacing-md) auto;
   border-radius: 0.5rem;
 }
-/* ADD THIS TO THE END of BookingForm.module.css */
 
 .successContainer {
   display: flex;
@@ -230,25 +229,8 @@
 .successActions a {
   text-decoration: none;
 }
-/* ADD THIS TO THE END of BookingForm.module.css */
 
-.couponMessage {
-  text-align: center;
-  font-weight: 600;
-  margin-top: -0.5rem; /* Pull it closer to the input */
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.couponSuccess {
-  color: var(--color-success, #16a34a); /* Green color */
-}
-
-.couponError {
-  color: var(--color-error, #dc2626); /* Red color */
-}
-/* --- Styles for New Attendee Grouping --- */
-
+/* Styles for New Attendee Grouping */
 .attendeeInputGroup {
   display: flex;
   flex-direction: column;
@@ -301,30 +283,57 @@
 .genderSelector input[type="radio"]:checked::before {
   transform: scale(1);
 }
-[
-  {
-    "code": "DHOL500",
-    "description": "Flat ₹500 off your total purchase!",
-    "type": "FLAT",
-    "value": 500,
-    "maxUses": 1,
-    "expiryDate": "2025-09-25T23:59:59"
-  },
-  {
-    "code": "SPECIAL10",
-    "description": "Get 10% off your booking.",
-    "type": "PERCENTAGE",
-    "value": 10,
-    "maxUses": 1,
-    "expiryDate": "2025-09-22T23:59:59"
-  },
-  {
-    "code": "EARLYBIRD",
-    "description": "Flat ₹100 off per ticket. A classic!",
-    "type": "FLAT_PER_TICKET",
-    "value": 100,
-    "maxUses": 100,
-    "expiryDate": "2025-09-16T00:00:00"
-  }
-]
 
+/* --- New Coupon Input Styles --- */
+.couponInputContainer {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.couponInputContainer input {
+  flex-grow: 1;
+  text-transform: uppercase; /* Makes codes look cleaner */
+}
+.couponInputContainer input::placeholder {
+  text-transform: none;
+}
+
+.applyBtn {
+  background-color: var(--color-primary-dark);
+  color: white;
+  flex-shrink: 0;
+  padding: 0 1.5rem;
+  font-weight: 700;
+}
+
+.applyBtn:hover {
+  opacity: 0.9;
+}
+
+.applyBtn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Updated Coupon Message Styles */
+.couponMessage {
+  text-align: center;
+  font-weight: 600;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.couponMessage.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.couponMessage.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
