@@ -1,65 +1,76 @@
-import styles from './TicketPass.module.css';
+import styles from './TicketPass.module.css'; // We reuse the existing styles
 import eventConfig from '../eventConfig.json';
-import dholratriLogo from '../assets/dholratri-logo.png'; // 1. Import logo
 
-// 2. Reusable border component
-const TicketBorder = () => (
-  <svg className={styles.ticketBorder} width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="none" rx="16" ry="16" stroke="var(--accent-color)" strokeWidth="4" strokeDasharray="10 10" strokeDashoffset="0" />
-  </svg>
-);
-
+// This component expects a prop 'tickets' which is an ARRAY of the two ticket objects
 function CoupleTicketPass({ tickets }) {
-  const [ticketA, ticketB] = tickets;
+  const [ticketA, ticketB] = tickets; // Split the array into two tickets
+
+  // Get tier details (they will be the same)
   const tierDetails = eventConfig.tiers.find(t => t.id === ticketA.ticketType);
   const tierName = tierDetails ? tierDetails.name : ticketA.ticketType;
 
+  // Create the prefixed names (using the logic from TicketPass.jsx)
   const nameA = `${ticketA.gender === 'male' ? 'Mr. ' : ticketA.gender === 'female' ? 'Miss. ' : ''}${ticketA.attendeeName}`;
   const nameB = `${ticketB.gender === 'male' ? 'Mr. ' : ticketB.gender === 'female' ? 'Miss. ' : ''}${ticketB.attendeeName}`;
 
   return (
-    // 3. JSX completely restructured
     <div className={`${styles.ticketPass} ${styles.couplePass}`}>
-      <TicketBorder />
-      
-      {/* --- Main Info Section --- */}
+      {/* Main Info Section */}
       <div className={styles.mainInfo}>
-        <img src={dholratriLogo} alt="DholRatri Logo" className={styles.brandLogo} />
-        
         <div className={styles.header}>
-          <span>{eventConfig.location} Event Pass</span>
+          <span>{eventConfig.location} Event</span>
           <h2>{eventConfig.eventName}</h2>
+        </div>
+        
+        {/* Attendee 1 Info */}
+        <div className={styles.attendeeInfo} style={{ marginBottom: '1.5rem' }}>
+          <h3>{nameA}</h3>
+          <p>Pass Holder 1</p>
+        </div>
+
+        {/* Attendee 2 Info */}
+        <div className={styles.attendeeInfo}>
+          <h3>{nameB}</h3>
+          <p>Pass Holder 2</p>
         </div>
 
         <div className={styles.details}>
-           <div>
+          <div>
             <strong>Ticket Type</strong>
-            <span style={{ textTransform: 'capitalize' }}>{tierName}</span>
+            <span style={{ textTransform: 'capitalize' }}>{tierName} (Admits 2)</span>
+          </div>
+          <div>
+            <strong>Phone</strong>
+            <span>{ticketA.phone}</span>
+          </div>
+          <div>
+            <strong>Status</strong>
+            <span style={{ color: '#16a34a', textTransform: 'uppercase' }}>{ticketA.status}</span>
           </div>
            <div>
-            <strong>Admits</strong>
-            <span>Two (2) Guests</span>
+            <strong>Pass ID (P1)</strong>
+            <span style={{ fontSize: '0.9rem', fontFamily: 'monospace' }}>{ticketA._id}</span>
           </div>
-        </div>
-
-        <div className={styles.attendeeInfo}>
-          <h3>{nameA} &amp; {nameB}</h3>
-          <p>Official Pass Holders</p>
+           <div>
+            <strong>Pass ID (P2)</strong>
+            <span style={{ fontSize: '0.9rem', fontFamily: 'monospace' }}>{ticketB._id}</span>
+          </div>
         </div>
       </div>
 
-      {/* --- QR Code Section (Two QRs) --- */}
-      <div className={styles.qrStub} style={{ gap: '1rem', justifyContent: 'center' }}>
-        <div className={styles.qrCodeWrapper}>
-           <img src={ticketA.qrCodeDataUrl} alt="QR Code 1" />
-           <p>{nameA}</p>
-           <span>ID: {ticketA._id}</span>
+      {/* QR Stub Section (with 2 QRs) */}
+      <div className={styles.qrStub} style={{ justifyContent: 'space-around', gap: '1rem' }}>
+        <div style={{ textAlign: 'center' }}>
+          <img src={ticketA.qrCodeDataUrl} alt="QR Code 1" style={{ width: '150px', height: '150px' }} />
+          <p style={{ fontSize: '0.8rem', margin: '0.5rem 0 0 0' }}>QR for {nameA}</p>
         </div>
-         <div className={styles.qrCodeWrapper}>
-           <img src={ticketB.qrCodeDataUrl} alt="QR Code 2" />
-           <p>{nameB}</p>
-           <span>ID: {ticketB._id}</span>
+        <div style={{ textAlign: 'center' }}>
+          <img src={ticketB.qrCodeDataUrl} alt="QR Code 2" style={{ width: '150px', height: '150px' }} />
+          <p style={{ fontSize: '0.8rem', margin: '0.5rem 0 0 0' }}>QR for {nameB}</p>
         </div>
+        <p style={{ fontSize: '0.8rem', color: '#777', textAlign: 'center', marginTop: '1rem' }}>
+          Present this at entry. Each QR code is valid for one (1) entry.
+        </p>
       </div>
     </div>
   );
