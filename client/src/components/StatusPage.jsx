@@ -7,7 +7,7 @@ import formStyles from './BookingForm.module.css';
 import pageStyles from './EventPage.module.css';
 import TicketPass from './TicketPass.jsx';
 import CoupleTicketPass from './CoupleTicketPass.jsx'; 
-import GroupTicketPass from './GroupTicketPass.jsx';
+// We no longer import GroupTicketPass
 import pendingAnimationData from '../assets/pending-animation.json';
 
 function StatusPage() {
@@ -60,20 +60,19 @@ function StatusPage() {
     }
   };
 
-  // --- DEFINITIVE CRASH-PROOF LOGIC ---
+  // --- SIMPLIFIED GROUPING LOGIC ---
   
-  // 1. Clean the raw API data immediately. This is the most important fix.
-  const cleanTickets = tickets.filter(Boolean); // Removes any null/undefined entries in the array
+  const cleanTickets = tickets.filter(Boolean);
 
-  // 2. Now, create the status lists from the clean data.
   const approvedTickets = cleanTickets.filter((t) => t.status === 'approved');
   const pendingTickets = cleanTickets.filter((t) => t.status === 'pending-approval' || t.status === 'payment-pending');
   const rejectedTickets = cleanTickets.filter((t) => t.status === 'rejected');
 
-  const soloTicketsList = approvedTickets.filter(t => t.ticketType !== 'couple' && t.ticketType !== 'groupof5');
+  // 1. Separate couple tickets from all other tickets.
+  const nonCoupleTickets = approvedTickets.filter(t => t.ticketType !== 'couple');
   const coupleTicketsList = approvedTickets.filter(t => t.ticketType === 'couple');
-  const group5TicketsList = approvedTickets.filter(t => t.ticketType === 'groupof5');
 
+  // 2. Group only the couple tickets by PurchaseID.
   const coupleTicketGroups = coupleTicketsList.reduce((acc, ticket) => {
     if (ticket && ticket.purchaseId) { 
       const purchaseId = ticket.purchaseId.toString();
@@ -83,15 +82,7 @@ function StatusPage() {
     return acc;
   }, {});
 
-  const group5TicketGroups = group5TicketsList.reduce((acc, ticket) => {
-    if (ticket && ticket.purchaseId) { 
-      const purchaseId = ticket.purchaseId.toString();
-      if (!acc[purchaseId]) acc[purchaseId] = [];
-      acc[purchaseId].push(ticket);
-    }
-    return acc;
-  }, {});
-
+  // 3. Partition the couple groups into valid pairs and orphans.
   const validCouplePasses = [];
   const orphanCoupleTickets = [];
   Object.values(coupleTicketGroups).forEach(group => {
@@ -102,17 +93,8 @@ function StatusPage() {
     }
   });
 
-  const validGroup5Passes = [];
-  const orphanGroup5Tickets = [];
-  Object.values(group5TicketGroups).forEach(group => {
-    if (group.length === 5) {
-      validGroup5Passes.push(group);
-    } else {
-      orphanGroup5Tickets.push(...group);
-    }
-  });
-
-  const finalSoloTicketsToRender = [...soloTicketsList, ...orphanCoupleTickets, ...orphanGroup5Tickets];
+  // 4. The final list of individual tickets now contains everything else.
+  const finalIndividualTickets = [...nonCoupleTickets, ...orphanCoupleTickets];
   // --- END OF LOGIC ---
 
 
@@ -154,7 +136,7 @@ function StatusPage() {
           </div>
         )}
 
-        {(validCouplePasses.length > 0 || validGroup5Passes.length > 0 || finalSoloTicketsToRender.length > 0) && (
+        {(validCouplePasses.length > 0 || finalIndividualTickets.length > 0) && (
           <>
             <div className={`${styles.passListHeader} print-hide`}>
               <h2 className={styles.statusTitle}>Your Official Pass(es)</h2>
@@ -165,6 +147,7 @@ function StatusPage() {
             <div className={`${styles.passListContainer} print-container`}>
               <AnimatePresence>
                 
+                {/* 1. Render combined couple passes */}
                 {validCouplePasses.map((ticketGroup, index) => (
                   <motion.div
                     key={ticketGroup[0].purchaseId} 
@@ -177,24 +160,13 @@ function StatusPage() {
                   </motion.div>
                 ))}
 
-                 {validGroup5Passes.map((ticketGroup, index) => (
-                  <motion.div
-                    key={ticketGroup[0].purchaseId} 
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length) * 0.2 }} 
-                    exit={{ opacity: 0 }}
-                  >
-                    <GroupTicketPass tickets={ticketGroup} /> 
-                  </motion.div>
-                ))}
-
-                {finalSoloTicketsToRender.map((ticket, index) => (
+                {/* 2. Render all other tickets (including groupof5) individually */}
+                {finalIndividualTickets.map((ticket, index) => (
                   <motion.div
                     key={ticket._id} 
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length + validGroup5Passes.length) * 0.2 }} 
+                    transition={{ duration: 0.5, delay: (index + validCouplePasses.length) * 0.2 }} 
                     exit={{ opacity: 0 }}
                   >
                     <TicketPass ticket={ticket} /> 
