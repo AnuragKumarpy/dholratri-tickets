@@ -8,7 +8,8 @@
       "name": " Solo Pass",
       "price": 299,
       "perks": ["Entry","Access to Garba Arena","1 x Hand Ribbon"]
-    },    {
+    },    
+    {
       "id": "premium",
       "name": "Premium Pass",
       "price": 499, 
