@@ -9,9 +9,9 @@
       "price": 299,
       "perks": ["Entry","Access to Garba Arena","1 x Hand Ribbon"]
     },    {
-      "id": "luxury",
+      "id": "premium",
       "name": "Premium Pass",
-      "price": 399, 
+      "price": 499, 
       "perks" : "All in Solo Pass","Dandiya Accessories","Access to Zone A","Request a Song","Complementry Water"]
     },
     {
