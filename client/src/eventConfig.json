@@ -10,8 +10,8 @@
       "perks": ["Entry","Access to Garba Arena","1 x Hand Ribbon"]
     },
     {
-      "id": "Premium",
-      "name": "Couple Pass",
+      "id": "premium",
+      "name": "Premium Pass",
       "price": 699, 
       "perks": ["All in Solo Pass","Dandiya Acessories","Song Request(Theme Only)","DholRatri PhotoAlbum","1 Mystery Box Free"]
     },
