@@ -7,7 +7,12 @@
       "id": "general",
       "name": " Solo Pass",
       "price": 299,
-      "perks": ["Entry","Dandiya Sticks Pair","1 x Hand Ribbon","Complementary Water"]
+      "perks": ["Entry","Access to Garba Arena","1 x Hand Ribbon"]
+    },    {
+      "id": "luxury",
+      "name": "Premium Pass",
+      "price": 399, 
+      "perks" : "All in Solo Pass","Dandiya Accessories","Access to Zone A","Request a Song","Complementry Water"]
     },
     {
       "id": "couple",
