@@ -6,19 +6,19 @@
     {
       "id": "general",
       "name": " Solo Pass",
-      "price": 699,
+      "price": 299,
       "perks": ["Entry","Dandiya Sticks Pair","1 x Hand Ribbon","Complementary Water"]
     },
     {
       "id": "couple",
       "name": "Couple Pass",
-      "price": 1299, 
+      "price": 499, 
       "perks": ["Entry for Two", "All in Solo Pass"]
     },
     {
       "id": "groupof5",
       "name": "Group of 5 Pass",
-      "price": 2999, 
+      "price": 1299, 
       "perks": ["Entry for 5 Guests", "All in Solo Pass"]
     }    
   ]
