@@ -8,7 +8,13 @@
       "name": " Solo Pass",
       "price": 299,
       "perks": ["Entry","Access to Garba Arena","1 x Hand Ribbon"]
-    },    
+    },
+    {
+      "id": "couple",
+      "name": "Couple Pass",
+      "price": 499, 
+      "perks": ["Entry for Two", "All in Solo Pass"]
+    },
     {
       "id": "couple",
       "name": "Couple Pass",
