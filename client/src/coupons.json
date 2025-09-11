@@ -1,6 +1,6 @@
 [
   {
-    "code": "FOLLOWMAX",
+    "code": "FOLLOWME",
     "description": "Flat ₹200 off your total purchase!",
     "type": "FLAT",
     "value": 200,
@@ -11,7 +11,7 @@
     "code": "EARLYBIRD",
     "description": "Flat ₹100 off per ticket. A classic!",
     "type": "FLAT_PER_TICKET",
-    "value": 100,
+    "value": 10,
     "maxUses": 100,
     "expiryDate": "2025-09-16T00:00:00"
   }
